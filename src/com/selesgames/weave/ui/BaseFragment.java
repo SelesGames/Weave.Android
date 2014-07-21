@@ -1,4 +1,4 @@
-package com.selesgames.weave;
+package com.selesgames.weave.ui;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;

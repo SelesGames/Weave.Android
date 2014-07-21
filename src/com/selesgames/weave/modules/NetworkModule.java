@@ -2,6 +2,7 @@ package com.selesgames.weave.modules;
 
 import javax.inject.Singleton;
 
+import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
 import retrofit.RestAdapter.LogLevel;
 import retrofit.client.OkClient;
@@ -15,17 +16,21 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.selesgames.weave.ForJSON;
 import com.selesgames.weave.ForXML;
 import com.selesgames.weave.api.CategoryService;
+import com.selesgames.weave.api.IdentityService;
+import com.selesgames.weave.api.UserService;
 import com.squareup.okhttp.OkHttpClient;
 
 import dagger.Module;
 import dagger.Provides;
 
-/**
- * A module for Android-specific dependencies which require a {@link Context} or
- * {@link android.app.Application} to create.
- */
 @Module(library = true)
 public class NetworkModule {
+
+    private Context mContext;
+
+    public NetworkModule(Context context) {
+        mContext = context;
+    }
 
     @Provides
     @Singleton
@@ -60,10 +65,36 @@ public class NetworkModule {
 
     @Provides
     @Singleton
+    UserService provideUserService(OkClient client, @ForJSON Converter converter) {
+        RequestInterceptor interceptor = new RequestInterceptor() {
+
+            @Override
+            public void intercept(RequestFacade r) {
+                r.addHeader("Accept", "application/json");
+            }
+
+        };
+        RestAdapter restAdapter = new RestAdapter.Builder().setEndpoint("http://weave-user.cloudapp.net/api")
+                .setClient(client).setConverter(converter).setLogLevel(LogLevel.FULL)
+                .setRequestInterceptor(interceptor).build();
+        return restAdapter.create(UserService.class);
+    }
+
+    @Provides
+    @Singleton
     CategoryService provideCategoryService(OkClient client, @ForXML Converter converter) {
         RestAdapter restAdapter = new RestAdapter.Builder().setEndpoint("http://weave.blob.core.windows.net")
                 .setClient(client).setConverter(converter).setLogLevel(LogLevel.FULL).build();
         return restAdapter.create(CategoryService.class);
+    }
+
+    @Provides
+    @Singleton
+    IdentityService provideIdentityService(OkClient client, @ForJSON Converter converter) {
+        RestAdapter restAdapter = new RestAdapter.Builder()
+                .setEndpoint("http://weave-identity.cloudapp.net/api/identity/sync").setClient(client)
+                .setConverter(converter).setLogLevel(LogLevel.FULL).build();
+        return restAdapter.create(IdentityService.class);
     }
 
 }

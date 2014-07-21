@@ -1,31 +1,54 @@
 package com.selesgames.weave.model;
 
-import org.simpleframework.xml.Attribute;
-import org.simpleframework.xml.Root;
-import org.simpleframework.xml.Text;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-@Root(name = "Feed", strict = false)
 public class Feed {
+    
+    @JsonProperty("Id")
+    private String id;
 
-    @Attribute(name = "Name")
+    @JsonProperty("Uri")
+    private String uri;
+
+    @JsonProperty("Name")
     private String name;
 
-    @Attribute(name = "IconUrl", required = false)
-    private String iconUrl;
+    @JsonProperty("Category")
+    private String category;
 
-    @Text(required = false)
-    private String contentUrl;
+    @JsonProperty("ArticleViewingType")
+    private String articleViewingType;
+
+    public String getUri() {
+        return uri;
+    }
+
+    public void setUri(String uri) {
+        this.uri = uri;
+    }
 
     public String getName() {
         return name;
     }
 
-    public String getIconUrl() {
-        return iconUrl;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public String getContentUrl() {
-        return contentUrl;
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public String getArticleViewingType() {
+        return articleViewingType;
+    }
+
+    public void setArticleViewingType(String articleViewingType) {
+        this.articleViewingType = articleViewingType;
     }
 
 }

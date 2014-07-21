@@ -13,17 +13,14 @@ import android.os.Looper;
 import com.selesgames.weave.BuildConfig;
 import com.selesgames.weave.Debug;
 import com.selesgames.weave.ForApplication;
-import com.selesgames.weave.MainThread;
+import com.selesgames.weave.OnMainThread;
 import com.selesgames.weave.WeaveApplication;
+import com.selesgames.weave.WeavePrefs;
 import com.squareup.picasso.Picasso;
 
 import dagger.Module;
 import dagger.Provides;
 
-/**
- * A module for Android-specific dependencies which require a {@link Context} or
- * {@link android.app.Application} to create.
- */
 @Module(library = true, includes = { NetworkModule.class })
 public class WeaveModule {
     private final WeaveApplication application;
@@ -47,7 +44,7 @@ public class WeaveModule {
 
     @Provides
     @Singleton
-    @MainThread
+    @OnMainThread
     Scheduler provideMainThread() {
         final Handler handler = new Handler(Looper.getMainLooper());
         return Schedulers.from(new Executor() {
@@ -57,6 +54,12 @@ public class WeaveModule {
                 handler.post(command);
             }
         });
+    }
+
+    @Provides
+    @Singleton
+    WeavePrefs provideWeavePrefs(@ForApplication Context context) {
+        return new WeavePrefs(context);
     }
 
     @Provides

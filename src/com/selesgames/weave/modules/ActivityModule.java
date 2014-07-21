@@ -4,15 +4,17 @@ import javax.inject.Singleton;
 
 import android.content.Context;
 
-import com.selesgames.weave.BaseActivity;
 import com.selesgames.weave.ForActivity;
-import com.selesgames.weave.MainActivity;
-import com.selesgames.weave.fragments.CategoriesFragment;
+import com.selesgames.weave.ui.BaseActivity;
+import com.selesgames.weave.ui.main.CategoriesFragment;
+import com.selesgames.weave.ui.main.MainActivity;
+import com.selesgames.weave.ui.onboarding.OnboardingActivity;
+import com.selesgames.weave.ui.onboarding.OnboardingFragment;
 
 import dagger.Module;
 import dagger.Provides;
 
-@Module(injects = { MainActivity.class, CategoriesFragment.class }, addsTo = WeaveModule.class, library = true)
+@Module(injects = { MainActivity.class, CategoriesFragment.class, OnboardingActivity.class, OnboardingFragment.class }, addsTo = WeaveModule.class, library = true)
 public class ActivityModule {
 
     private final BaseActivity activity;

@@ -1,4 +1,4 @@
-package com.selesgames.weave.fragments;
+package com.selesgames.weave.ui.main;
 
 import java.util.List;
 
@@ -17,13 +17,13 @@ import android.widget.ListView;
 import android.widget.TextView;
 import butterknife.InjectView;
 
-import com.selesgames.weave.BaseFragment;
 import com.selesgames.weave.ForActivity;
-import com.selesgames.weave.MainThread;
+import com.selesgames.weave.OnMainThread;
 import com.selesgames.weave.R;
 import com.selesgames.weave.api.CategoryService;
 import com.selesgames.weave.model.Category;
 import com.selesgames.weave.model.CategoryFeed;
+import com.selesgames.weave.ui.BaseFragment;
 
 public class CategoriesFragment extends BaseFragment {
 
@@ -32,7 +32,7 @@ public class CategoriesFragment extends BaseFragment {
     Context mContext;
 
     @Inject
-    @MainThread
+    @OnMainThread
     Scheduler mScheduler;
 
     @Inject

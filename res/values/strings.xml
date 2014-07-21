@@ -5,4 +5,15 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
 
+    <!-- Onboarding -->
+
+    <string name="onboarding_welcome">Welcome to Weave!</string>
+    <string name="onboarding_create_account">Create Account</string>
+    <string name="onboarding_skip_social">Continue without Social account</string>
+    <string name="onboarding_facebook">Login with Facebook</string>
+    <string name="onboarding_twitter">Login with Twitter</string>
+    <string name="onboarding_google_plus">Login with Google Plus</string>
+    <string name="onboarding_microsoft">Login with Microsoft</string>
+    <string name="onboarding_login_fail">Could not login</string>
+
 </resources>

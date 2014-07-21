@@ -1,0 +1,90 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="12dp"
+    tools:context="com.selesgames.weave.ui.main.MainActivity" >
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/account_container" >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/onboarding_welcome"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/account_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true" >
+
+        <Button
+            android:id="@+id/create_account"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/onboarding_skip_social" />
+
+        <LinearLayout
+            android:id="@+id/social_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="12dp" >
+
+                <ImageView
+                    android:id="@+id/login_facebook"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:contentDescription="@string/onboarding_facebook"
+                    android:src="@drawable/login_facebook" />
+
+                <ImageView
+                    android:id="@+id/login_twitter"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:contentDescription="@string/onboarding_twitter"
+                    android:src="@drawable/login_twitter" />
+
+                <ImageView
+                    android:id="@+id/login_google_plus"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:contentDescription="@string/onboarding_google_plus"
+                    android:src="@drawable/login_google_plus" />
+
+                <ImageView
+                    android:id="@+id/login_windows"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:contentDescription="@string/onboarding_microsoft"
+                    android:src="@drawable/login_microsoft" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/skip_social"
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/onboarding_skip_social" />
+        </LinearLayout>
+    </FrameLayout>
+
+</RelativeLayout>

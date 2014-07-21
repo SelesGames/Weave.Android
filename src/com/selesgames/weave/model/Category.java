@@ -13,13 +13,13 @@ public class Category {
     private String type;
 
     @ElementList(name = "Feed", inline = true, required = false)
-    private List<Feed> feeds;
+    private List<FeedXml> feeds;
 
     public String getType() {
         return type;
     }
 
-    public List<Feed> getFeeds() {
+    public List<FeedXml> getFeeds() {
         return feeds;
     }
 
