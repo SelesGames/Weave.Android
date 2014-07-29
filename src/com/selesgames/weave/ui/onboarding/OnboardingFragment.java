@@ -88,7 +88,9 @@ public class OnboardingFragment extends BaseFragment {
 
         // Create user
         if (mPrefs.getUserId() == null) {
-            createAccount();
+            mPrefs.setUserId("0d13bf82-0f14-475f-9725-f97e5a123d5a");
+            mController.finished();
+            //createAccount();
         } else {
             mSocialContainer.setVisibility(View.VISIBLE);
         }

@@ -1,6 +1,9 @@
 package com.selesgames.weave.ui.main;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -11,18 +14,21 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import butterknife.InjectView;
 
 import com.selesgames.weave.ForActivity;
 import com.selesgames.weave.OnMainThread;
 import com.selesgames.weave.R;
-import com.selesgames.weave.api.CategoryService;
-import com.selesgames.weave.model.Category;
-import com.selesgames.weave.model.CategoryFeed;
+import com.selesgames.weave.WeavePrefs;
+import com.selesgames.weave.api.UserService;
+import com.selesgames.weave.model.Feed;
+import com.selesgames.weave.model.User;
 import com.selesgames.weave.ui.BaseFragment;
 
 public class CategoriesFragment extends BaseFragment {
@@ -32,16 +38,25 @@ public class CategoriesFragment extends BaseFragment {
     Context mContext;
 
     @Inject
+    CategoriesController mController;
+
+    @Inject
     @OnMainThread
     Scheduler mScheduler;
 
     @Inject
-    CategoryService mCategoryService;
+    WeavePrefs mPrefs;
+
+    @Inject
+    UserService mUserService;
 
     @InjectView(R.id.list)
     ListView mListView;
 
-    Adapter mAdapter;
+    @InjectView(R.id.progress)
+    ProgressBar mProgress;
+
+    private Adapter mAdapter;
 
     public static CategoriesFragment newInstance() {
         return new CategoriesFragment();
@@ -53,21 +68,29 @@ public class CategoriesFragment extends BaseFragment {
     }
 
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-
-    }
-
-    @Override
     public void onStart() {
         super.onStart();
 
         if (mAdapter == null) {
-            mCategoryService.getCategories().observeOn(mScheduler).subscribe(new Action1<CategoryFeed>() {
+
+            mUserService.getInfo(mPrefs.getUserId(), true).observeOn(mScheduler).subscribe(new Action1<User>() {
 
                 @Override
-                public void call(CategoryFeed feed) {
-                    mAdapter = new Adapter(mContext, feed.getCategories());
+                public void call(User user) {
+                    Map<String, List<Feed>> categoryMap = new HashMap<String, List<Feed>>();
+                    for (Feed f : user.getFeeds()) {
+                        String category = f.getCategory();
+                        List<Feed> feeds = categoryMap.get(category);
+                        if (feeds == null) {
+                            feeds = new ArrayList<Feed>();
+                            categoryMap.put(category, feeds);
+                        }
+                        feeds.add(f);
+                    }
+
+                    mAdapter = new Adapter(mContext, categoryMap);
                     mListView.setAdapter(mAdapter);
+                    mProgress.setVisibility(View.GONE);
                 }
 
             }, new Action1<Throwable>() {
@@ -75,20 +98,31 @@ public class CategoriesFragment extends BaseFragment {
                 @Override
                 public void call(Throwable t) {
                     Log.e("WEAVE", "Could not load categories", t);
+                    // TODO: Show error state
                 }
             });
+        } else {
+            mListView.setAdapter(mAdapter);
+            mProgress.setVisibility(View.GONE);
         }
     }
 
-    private static class Adapter extends BaseAdapter {
+    private class Adapter extends BaseAdapter {
 
         private LayoutInflater mInflater;
 
-        private List<Category> mCategories;
+        private Map<String, List<Feed>> mCategoryMap;
 
-        public Adapter(Context context, List<Category> categories) {
+        private List<String> mCategories;
+
+        public Adapter(Context context, Map<String, List<Feed>> categoryMap) {
             mInflater = LayoutInflater.from(context);
-            mCategories = categories;
+            mCategoryMap = categoryMap;
+
+            mCategories = new ArrayList<String>();
+            for (String key : categoryMap.keySet()) {
+                mCategories.add(key);
+            }
         }
 
         @Override
@@ -112,9 +146,27 @@ public class CategoriesFragment extends BaseFragment {
                 convertView = mInflater.inflate(R.layout.listitem_category, parent, false);
             }
 
-            Category category = mCategories.get(position);
+            final String category = mCategories.get(position);
+            List<Feed> feeds = mCategoryMap.get(category);
+            StringBuilder feedsText = new StringBuilder();
+            final String SPACER = ", ";
+            for (int i = 0; i < feeds.size() && i < 5; i++) {
+                Feed f = feeds.get(i);
+                feedsText.append(f.getName());
+                feedsText.append(SPACER);
+            }
 
-            ((TextView) convertView.findViewById(R.id.name)).setText(category.getType());
+            ((TextView) convertView.findViewById(R.id.name)).setText(category);
+            ((TextView) convertView.findViewById(R.id.feeds)).setText(feedsText.substring(0, feedsText.length()
+                    - SPACER.length() - 1));
+
+            convertView.setOnClickListener(new OnClickListener() {
+
+                @Override
+                public void onClick(View v) {
+                    mController.onCategorySelected(category);
+                }
+            });
 
             return convertView;
         }

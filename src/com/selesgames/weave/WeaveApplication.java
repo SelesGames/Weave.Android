@@ -20,7 +20,7 @@ public class WeaveApplication extends Application {
     }
 
     protected List<Object> getModules() {
-        return Arrays.<Object> asList(new WeaveModule(this), new NetworkModule(this));
+        return Arrays.<Object> asList(new WeaveModule(this), new NetworkModule());
     }
 
     public ObjectGraph getApplicationGraph() {

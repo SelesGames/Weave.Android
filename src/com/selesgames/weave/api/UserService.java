@@ -8,6 +8,7 @@ import retrofit.http.POST;
 import retrofit.http.Query;
 import rx.Observable;
 
+import com.selesgames.weave.model.CategoryNews;
 import com.selesgames.weave.model.Feed;
 import com.selesgames.weave.model.User;
 
@@ -26,7 +27,7 @@ public interface UserService {
     Observable<Void> removeFeed(@Query("userId") String userId, @Query("feedId") String feedId);
 
     @GET("/user/news")
-    Observable<List<Feed>> getNewsForCategory(@Query("userId") String userId, @Query("category") String category,
+    Observable<CategoryNews> getFeedsForCategory(@Query("userId") String userId, @Query("category") String category,
             @Query("entry") String entry, @Query("skip") int skip, @Query("take") int take);
 
     @GET("/user/news")

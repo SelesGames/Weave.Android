@@ -6,7 +6,7 @@ import org.simpleframework.xml.ElementList;
 import org.simpleframework.xml.Root;
 
 @Root(name = "Feeds")
-public class CategoryFeed {
+public class CategoryList {
 
     @ElementList(name = "Category", inline = true)
     private List<Category> categories;
