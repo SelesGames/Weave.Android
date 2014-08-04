@@ -24,7 +24,7 @@ import com.squareup.picasso.Picasso;
 public class NewsAdapter extends BaseAdapter {
 
     public interface ClickListener {
-        void onItemClicked(News news);
+        void onItemClicked(Feed feed, News news);
     }
 
     private Context mContext;
@@ -104,7 +104,8 @@ public class NewsAdapter extends BaseAdapter {
             @Override
             public void onClick(View v) {
                 if (mClickListener != null) {
-                    mClickListener.onItemClicked(news);
+                    Feed feed = mFeedMap.get(news.getFeedId());
+                    mClickListener.onItemClicked(feed, news);
                 }
             }
         });

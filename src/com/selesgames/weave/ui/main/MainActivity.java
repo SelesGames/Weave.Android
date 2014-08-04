@@ -19,6 +19,7 @@ import butterknife.InjectView;
 import com.selesgames.weave.ForActivity;
 import com.selesgames.weave.R;
 import com.selesgames.weave.WeavePrefs;
+import com.selesgames.weave.model.Feed;
 import com.selesgames.weave.model.News;
 import com.selesgames.weave.modules.ActivityModule;
 import com.selesgames.weave.ui.BaseActivity;
@@ -105,14 +106,14 @@ public class MainActivity extends BaseActivity implements CategoriesController {
     }
     
     @Override
-    public void onNewsSelected(News news) {
+    public void onNewsSelected(Feed feed, News news) {
         // Remove anything to the right
         int currentIndex = mViewPager.getCurrentItem();
         for (int i = mFragments.size() - 1; i > currentIndex; i--) {
             mFragments.remove(i);
         }
         
-        Fragment f = NewsFragment.newInstance(news);
+        Fragment f = ArticleFragment.newInstance(feed, news);
         mFragments.add(f);
         mAdapter.notifyDataSetChanged();
         mViewPager.setCurrentItem(mAdapter.getCount() - 1, true);
@@ -125,7 +126,7 @@ public class MainActivity extends BaseActivity implements CategoriesController {
         return modules;
     }
 
-    @Module(injects = { MainActivity.class, CategoriesFragment.class, CategoryFragment.class, NewsFragment.class }, addsTo = ActivityModule.class)
+    @Module(injects = { MainActivity.class, CategoriesFragment.class, CategoryFragment.class, ArticleFragment.class }, addsTo = ActivityModule.class)
     public class MainActivityModule {
 
         @Provides

@@ -8,7 +8,7 @@ import android.os.Parcelable;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class NewsItem implements Parcelable {
+public class Article implements Parcelable {
 
     private String author;
 
@@ -30,11 +30,11 @@ public class NewsItem implements Parcelable {
     @JsonProperty("word_count")
     private int wordCount;
 
-    public NewsItem() {
+    public Article() {
 
     }
 
-    private NewsItem(Parcel in) {
+    private Article(Parcel in) {
         author = in.readString();
         content = in.readString();
         datePublished = new Date(in.readLong());
@@ -60,13 +60,13 @@ public class NewsItem implements Parcelable {
         return 0;
     }
 
-    public static final Parcelable.Creator<NewsItem> CREATOR = new Parcelable.Creator<NewsItem>() {
-        public NewsItem createFromParcel(Parcel in) {
-            return new NewsItem(in);
+    public static final Parcelable.Creator<Article> CREATOR = new Parcelable.Creator<Article>() {
+        public Article createFromParcel(Parcel in) {
+            return new Article(in);
         }
 
-        public NewsItem[] newArray(int size) {
-            return new NewsItem[size];
+        public Article[] newArray(int size) {
+            return new Article[size];
         }
     };
 

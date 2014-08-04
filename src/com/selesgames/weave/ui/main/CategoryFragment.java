@@ -20,6 +20,7 @@ import com.selesgames.weave.R;
 import com.selesgames.weave.WeavePrefs;
 import com.selesgames.weave.api.UserService;
 import com.selesgames.weave.model.CategoryNews;
+import com.selesgames.weave.model.Feed;
 import com.selesgames.weave.model.News;
 import com.selesgames.weave.ui.BaseFragment;
 import com.squareup.picasso.Picasso;
@@ -95,8 +96,8 @@ public class CategoryFragment extends BaseFragment {
                             mAdapter.setOnClickListener(new NewsAdapter.ClickListener() {
 
                                 @Override
-                                public void onItemClicked(News news) {
-                                    mController.onNewsSelected(news);
+                                public void onItemClicked(Feed feed, News news) {
+                                    mController.onNewsSelected(feed, news);
                                 }
 
                             });

@@ -1,0 +1,362 @@
+<!DOCTYPE html PUBLIC "-//WAPFORUM//DTD XHTML Mobile 1.2//EN" "http://www.openmobilealliance.org/tech/DTD/xhtml-mobile12.dtd">
+<html>
+
+<head>
+    <title>[TITLE]</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no !important">
+    <style type="text/css">
+        html,
+        body,
+        div,
+        span,
+        applet,
+        object,
+        iframe,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        p,
+        blockquote,
+        pre,
+        a,
+        abbr,
+        acronym,
+        address,
+        big,
+        cite,
+        code,
+        del,
+        dfn,
+        em,
+        img,
+        ins,
+        kbd,
+        q,
+        s,
+        samp,
+        small,
+        strike,
+        strong,
+        sub,
+        sup,
+        tt,
+        var,
+        b,
+        u,
+        i,
+        center,
+        dl,
+        dt,
+        dd,
+        ol,
+        ul,
+        li,
+        fieldset,
+        form,
+        label,
+        legend,
+        table,
+        caption,
+        tbody,
+        tfoot,
+        thead,
+        tr,
+        th,
+        td,
+        article,
+        aside,
+        canvas,
+        details,
+        embed,
+        figure,
+        figcaption,
+        footer,
+        header,
+        hgroup,
+        menu,
+        nav,
+        output,
+        ruby,
+        section,
+        summary,
+        time,
+        mark,
+        audio,
+        video {
+            margin: 0;
+            padding: 0;
+            border: 0;
+            font-size: 100%;
+            font: inherit;
+            vertical-align: baseline;
+        }
+        article,
+        aside,
+        details,
+        figcaption,
+        figure,
+        footer,
+        header,
+        hgroup,
+        menu,
+        nav,
+        section {
+            display: block;
+        }
+        ol,
+        ul {
+            list-style: none;
+        }
+        blockquote,
+        q {
+            quotes: none;
+        }
+        blockquote:before,
+        blockquote:after,
+        q:before,
+        q:after {
+            content: '';
+            content: none;
+        }
+        table {
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+        
+        @font-face 
+        {
+        	font-family: "My font"; 
+        	src: url('file:///android_asset/[FONT].ttf');
+        }
+        
+         @font-face 
+        {
+        	font-family: "My font Bold"; 
+        	src: url('file:///android_asset/[FONT]Bold.ttf');
+        }
+        
+        body {
+            color: [FOREGROUND];
+            background-color: [BACKGROUND];
+            font-family: 'My font';
+            font-size: [FONTSIZE];
+            line-height: 1.5em;
+            
+            margin: 0;
+    		-webkit-font-smoothing: antialiased !important;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+            font-smooth: always;
+            word-wrap: break-word;
+        }
+        blockquote {
+            border-left: 2px solid[ACCENT];
+            padding: 0 0 0 12px;
+            margin: 1.8em 0px;
+            font-style: italic;
+            font-size: 0.96em;
+            line-height: 1.25em;
+        }
+        a:link {
+            color: [ACCENT];
+            text-decoration: none;
+        }
+        a:visited {
+            color: [ACCENT];
+            text-decoration: none;
+        }
+        #sg_articlewrapper {
+            margin: 0 auto;
+            overflow: hidden;
+            max-width: 30em;
+            -webkit-animation: demo 6.5s 0s none;
+        }
+        #sg_header {
+        	font-family: 'My font Bold';
+            padding: 1.2em 0 0 0;
+        }
+        #sg_herodiv {
+            position: relative;
+            margin: 0 0 0 0;
+            z-index: -1;
+        }
+        #sg_heroimage {
+            width: 100%
+        }
+        #sg_title {
+            font-size: 1.5em;
+            line-height: 1em;
+            margin: 0;
+            padding: 0 [PADDING] 0 [PADDING];
+        }
+        #sg_source {
+            float: right;
+            margin-right: -0;
+            margin-bottom: -1.15em;
+            padding: 0.4em 16px 0.4em .8em;
+            font-size: 0.8em;
+            font-weight: 900;
+            background: [ACCENT];
+            color: white;
+        }
+        #sg_pubtime {
+            padding: 0.3em [PADDING] 0 [PADDING];
+            font-size: 0.9em;
+            font-weight: 500;
+            opacity: .6;
+        }
+        #sg_content {
+            margin: -0.3em [PADDING] -0.5em [PADDING];
+        }
+        #sg_link {
+            display: block;
+            color: white;
+            background: [ACCENT];
+            margin: 1em 0;
+            font-weight: 900;
+            padding: 0.5em 0;
+        }
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-size: 1em;
+            font-weight: bold;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            font-size: 1.5em;
+            padding: 0.313em 0 0.469em;
+        }
+        h2 {
+            font-size: 1.333em;
+            line-height: 1.5em;
+            padding: 0.6em 0;
+        }
+        h3 {
+            font-size: 1.167em;
+            padding: 1.518em 0;
+        }
+        sub,
+        sup {
+            font-size: .75em;
+            line-height: 0;
+            position: relative;
+        }
+        sup {
+            top: -0.5em;
+        }
+        sub {
+            bottom: -0.25em;
+        }
+        small {
+            font-size: 0.833em;
+        }
+        big {
+            font-size: 1.167em;
+        }
+        em,
+        i {
+            font-style: italic;
+        }
+        strong,
+        b {
+            font-weight: 700;
+        }
+        p {
+            margin: 1.5em 0;
+        }
+        h1+p,
+        h2+p,
+        h3+p,
+        h4+p,
+        h5+p,
+        h6+p {
+            margin: .2em 0 1.5em 0;
+        }
+        img {
+            border: 0;
+            display: block;
+            margin: 1em auto 1em auto;
+            height: auto !important;
+            max-width: 100% !important;
+            -ms-interpolation-mode: bicubic;
+        }
+        figcaption {
+            font-style: italic;
+        }
+        object,
+        embed,
+        p,
+        iframe {
+            border: 0;
+            width: auto !important;
+            height: auto !important;
+            max-width: 100% !important;
+        }
+        li {
+            margin: 0 0;
+        }
+        ul,
+        ol,
+        li,
+        dd {
+            margin: 0;
+            padding: 0;
+        }
+        nav ul,
+        nav ol {
+            list-style: none;
+            list-style-image: none;
+            margin: 0;
+            padding: 0;
+        }
+        svg:not(:root) {
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body id="sg_body">
+    <article id="sg_articlewrapper">
+        <header id="sg_header">[HEADER]</header>
+        <div id="sg_content">[BODY]</div>
+        <footer id="sg_footer">
+            <a id="sg_link" href="[LINK]">
+                <div style="margin:0 16px;">view in browser</div>
+            </a>
+        </footer>
+    </article>
+</body>
+<script type="text/javascript">
+    function findFirstDescendant(parent, tagname) {
+        var descendants = parent.getElementsByTagName(tagname);
+        if (descendants.length) return descendants[0];
+        return null;
+    }
+
+    function colorFontAndBackground(foreground, background) {
+        var body = document.getElementById("sg_body");
+        body.style.color = foreground;
+        body.style.backgroundColor = background;
+    }
+
+    function setTextSize(amountToIncrease) {
+        var body = document.getElementById("sg_body");
+        body.style.fontSize = amountToIncrease;
+    }
+
+    function setFont(fontName) {
+        var body = document.getElementById("sg_body");
+        body.style.fontFamily = fontName;
+    }
+</script>
+
+</html>

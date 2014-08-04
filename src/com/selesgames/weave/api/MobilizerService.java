@@ -4,11 +4,11 @@ import retrofit.http.GET;
 import retrofit.http.Query;
 import rx.Observable;
 
-import com.selesgames.weave.model.NewsItem;
+import com.selesgames.weave.model.Article;
 
 public interface MobilizerService {
 
     @GET("/ipf")
-    Observable<NewsItem> getPage(@Query("url") String url);
+    Observable<Article> getArticle(@Query("url") String url);
 
 }

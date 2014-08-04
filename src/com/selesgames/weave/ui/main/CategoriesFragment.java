@@ -33,6 +33,8 @@ import com.selesgames.weave.ui.BaseFragment;
 
 public class CategoriesFragment extends BaseFragment {
 
+    private static final String KEY_USER = CategoriesFragment.class.getCanonicalName() + ".user";
+
     @Inject
     @ForActivity
     Context mContext;
@@ -58,8 +60,19 @@ public class CategoriesFragment extends BaseFragment {
 
     private Adapter mAdapter;
 
+    private User mUser;
+
     public static CategoriesFragment newInstance() {
         return new CategoriesFragment();
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        if (savedInstanceState != null) {
+            mUser = savedInstanceState.getParcelable(KEY_USER);
+        }
     }
 
     @Override
@@ -71,26 +84,14 @@ public class CategoriesFragment extends BaseFragment {
     public void onStart() {
         super.onStart();
 
-        if (mAdapter == null) {
+        if (mUser == null) {
 
             mUserService.getInfo(mPrefs.getUserId(), true).observeOn(mScheduler).subscribe(new Action1<User>() {
 
                 @Override
                 public void call(User user) {
-                    Map<String, List<Feed>> categoryMap = new HashMap<String, List<Feed>>();
-                    for (Feed f : user.getFeeds()) {
-                        String category = f.getCategory();
-                        List<Feed> feeds = categoryMap.get(category);
-                        if (feeds == null) {
-                            feeds = new ArrayList<Feed>();
-                            categoryMap.put(category, feeds);
-                        }
-                        feeds.add(f);
-                    }
-
-                    mAdapter = new Adapter(mContext, categoryMap);
-                    mListView.setAdapter(mAdapter);
-                    mProgress.setVisibility(View.GONE);
+                    mUser = user;
+                    displayCategories();
                 }
 
             }, new Action1<Throwable>() {
@@ -101,9 +102,41 @@ public class CategoriesFragment extends BaseFragment {
                     // TODO: Show error state
                 }
             });
-        } else {
+        }
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        displayCategories();
+    }
+
+    private void displayCategories() {
+        if (mUser != null) {
+            Map<String, List<Feed>> categoryMap = new HashMap<String, List<Feed>>();
+            for (Feed f : mUser.getFeeds()) {
+                String category = f.getCategory();
+                List<Feed> feeds = categoryMap.get(category);
+                if (feeds == null) {
+                    feeds = new ArrayList<Feed>();
+                    categoryMap.put(category, feeds);
+                }
+                feeds.add(f);
+            }
+
+            mAdapter = new Adapter(mContext, categoryMap);
             mListView.setAdapter(mAdapter);
             mProgress.setVisibility(View.GONE);
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        if (mUser != null) {
+            outState.putParcelable(KEY_USER, mUser);
         }
     }
 
