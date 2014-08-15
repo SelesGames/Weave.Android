@@ -4,13 +4,20 @@
     android:layout_height="match_parent"
     tools:context="com.selesgames.weave.ui.main.MainActivity" >
 
-    <ListView
+    <!--
+         <ListView
         android:id="@+id/list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/tertiary"
         android:divider="@null"
         android:dividerHeight="0dp" />
+    -->
+
+    <com.selesgames.weave.view.VerticalViewPager
+        android:id="@+id/pager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
     <ProgressBar
         android:id="@+id/progress"

@@ -34,7 +34,7 @@ public class ArticleFragment extends BaseFragment {
 
     public static final String KEY_NEWS = "news";
 
-    public static final String KEY_NEWS_ITEM = "news_item";
+    public static final String KEY_ARTICLE = ArticleFragment.class.getCanonicalName() + ".article";
 
     public static ArticleFragment newInstance(Feed feed, News news) {
         Bundle b = new Bundle();
@@ -51,7 +51,7 @@ public class ArticleFragment extends BaseFragment {
     Context mContext;
 
     @Inject
-    CategoriesController mController;
+    ArticleController mController;
 
     @Inject
     @OnMainThread
@@ -82,10 +82,9 @@ public class ArticleFragment extends BaseFragment {
         mFeed = b.getParcelable(KEY_FEED);
         mNews = b.getParcelable(KEY_NEWS);
 
-        // Ensure the news item in the saved state matches the news we want to
-        // load
+        // Ensure the article in the saved state matches the one we want to load
         if (savedInstanceState != null) {
-            Article article = (Article) savedInstanceState.get(KEY_NEWS_ITEM);
+            Article article = (Article) savedInstanceState.get(KEY_ARTICLE);
             if (article != null && article.getUrl().equals(mNews.getLink())) {
                 mArticle = article;
             }
@@ -103,6 +102,7 @@ public class ArticleFragment extends BaseFragment {
                 public void call(Article article) {
                     mArticle = article;
                     displayNews();
+                    mController.onArticleLoaded(mFeed, mNews, mArticle);
                 }
 
             }, new Action1<Throwable>() {
@@ -146,7 +146,7 @@ public class ArticleFragment extends BaseFragment {
         super.onSaveInstanceState(outState);
 
         if (mArticle != null) {
-            outState.putParcelable(KEY_NEWS_ITEM, mArticle);
+            outState.putParcelable(KEY_ARTICLE, mArticle);
         }
     }
 

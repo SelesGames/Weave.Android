@@ -1,16 +1,25 @@
 package com.selesgames.weave.ui.main;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import javax.inject.Inject;
 
 import rx.Scheduler;
 import rx.functions.Action1;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Parcelable;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListView;
 import android.widget.ProgressBar;
 import butterknife.InjectView;
 
@@ -23,15 +32,23 @@ import com.selesgames.weave.model.CategoryNews;
 import com.selesgames.weave.model.Feed;
 import com.selesgames.weave.model.News;
 import com.selesgames.weave.ui.BaseFragment;
+import com.selesgames.weave.view.VerticalViewPager;
 import com.squareup.picasso.Picasso;
 
 public class CategoryFragment extends BaseFragment {
 
     private static final String KEY_CATEGORY_ID = "category_id";
 
+    private static final String KEY_FORWARD = "forward";
+
+    private static final String KEY_NEWS = CategoryFragment.class.getCanonicalName() + ".news";
+
+    private static final String KEY_FEEDS = CategoryFragment.class.getCanonicalName() + ".feeds";
+
     public static CategoryFragment newInstance(String categoryId) {
         Bundle b = new Bundle();
         b.putString(KEY_CATEGORY_ID, categoryId);
+        b.putBoolean(KEY_FORWARD, true);
 
         CategoryFragment f = new CategoryFragment();
         f.setArguments(b);
@@ -43,7 +60,7 @@ public class CategoryFragment extends BaseFragment {
     Context mContext;
 
     @Inject
-    CategoriesController mController;
+    CategoryController mController;
 
     @Inject
     @OnMainThread
@@ -58,15 +75,23 @@ public class CategoryFragment extends BaseFragment {
     @Inject
     Picasso mPicasso;
 
-    @InjectView(R.id.list)
-    ListView mListView;
+    @InjectView(R.id.pager)
+    VerticalViewPager mViewPager;
 
     @InjectView(R.id.progress)
     ProgressBar mProgress;
 
-    NewsAdapter mAdapter;
+    private Adapter mAdapter;
 
     private String mCategoryId;
+
+    private List<News> mNews;
+
+    private List<Feed> mFeeds;
+
+    private Map<String, Feed> mFeedMap;
+
+    private boolean mForward;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -74,6 +99,8 @@ public class CategoryFragment extends BaseFragment {
 
         Bundle b = getArguments();
         mCategoryId = b.getString(KEY_CATEGORY_ID);
+        mForward = b.getBoolean(KEY_FORWARD);
+        b.remove(KEY_FORWARD);
     }
 
     @Override
@@ -82,30 +109,87 @@ public class CategoryFragment extends BaseFragment {
     }
 
     @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        mFeedMap = new HashMap<String, Feed>();
+
+        if (savedInstanceState == null || mForward) {
+            mNews = new ArrayList<News>();
+            mFeeds = new ArrayList<Feed>();
+        } else {
+            mNews = savedInstanceState.getParcelableArrayList(KEY_NEWS);
+            mFeeds = savedInstanceState.getParcelableArrayList(KEY_FEEDS);
+            populateFeedMap(mFeeds);
+        }
+
+        mAdapter = new Adapter(getChildFragmentManager(), mNews, mFeedMap, !mForward);
+        mViewPager.setAdapter(mAdapter);
+        mAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void onViewStateRestored(Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+        
+        mViewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            
+            @Override
+            public void onPageSelected(int position) {
+                News news = mNews.get(position);
+                Feed feed = mFeedMap.get(news.getFeedId());
+                mController.onNewsFocussed(feed, news);
+            }
+            
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                
+            }
+            
+            @Override
+            public void onPageScrollStateChanged(int state) {
+                
+            }
+        });
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putParcelableArrayList(KEY_NEWS, (ArrayList<News>) mNews);
+        outState.putParcelableArrayList(KEY_FEEDS, (ArrayList<Feed>) mFeeds);
+    }
+
+    @Override
     public void onStart() {
         super.onStart();
 
-        if (mAdapter == null) {
+        if (mNews.isEmpty()) {
             mUserService.getFeedsForCategory(mPrefs.getUserId(), mCategoryId, "Mark", 0, 20).observeOn(mScheduler)
                     .subscribe(new Action1<CategoryNews>() {
 
                         @Override
                         public void call(CategoryNews news) {
                             mProgress.setVisibility(View.GONE);
-                            mAdapter = new NewsAdapter(mContext, mPicasso, news);
-                            mAdapter.setOnClickListener(new NewsAdapter.ClickListener() {
 
-                                @Override
-                                public void onItemClicked(Feed feed, News news) {
-                                    mController.onNewsSelected(feed, news);
-                                }
+                            List<Feed> feeds = news.getFeeds();
+                            mFeeds.removeAll(feeds);
+                            mFeeds.addAll(feeds);
 
-                            });
-                            mListView.setAdapter(mAdapter);
+                            populateFeedMap(news.getFeeds());
+
+                            mNews.addAll(news.getNews());
+                            mAdapter.notifyDataSetChanged();
 
                             for (News n : news.getNews()) {
-                                Picasso.with(mContext).load(n.getImageUrl()).skipMemoryCache().fetch();
+                                Picasso.with(mContext).load(n.getImageUrl()).fetch();
                             }
+                            
+                            // Focus the first item
+                            News n = mNews.get(0);
+                            Feed feed = mFeedMap.get(n.getFeedId());
+                            mController.onNewsFocussed(feed, n);
                         }
 
                     }, new Action1<Throwable>() {
@@ -116,9 +200,56 @@ public class CategoryFragment extends BaseFragment {
                         }
                     });
         } else {
-            mListView.setAdapter(mAdapter);
             mProgress.setVisibility(View.GONE);
         }
+    }
+
+    private void populateFeedMap(List<Feed> feeds) {
+        for (Feed f : feeds) {
+            mFeedMap.put(f.getId(), f);
+        }
+    }
+
+    private static class Adapter extends FragmentStatePagerAdapter {
+
+        private List<News> mNews;
+
+        private Map<String, Feed> mFeedMap;
+        
+        private boolean mShouldRestore;
+
+        public Adapter(FragmentManager fm, List<News> news, Map<String, Feed> feedMap, boolean shouldRestore) {
+            super(fm);
+            mNews = news;
+            mFeedMap = feedMap;
+            mShouldRestore = shouldRestore;
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            News news = mNews.get(position);
+            Feed feed = mFeedMap.get(news.getFeedId());
+            return NewsFragment.newInstance(feed, news);
+        }
+
+        @Override
+        public int getCount() {
+            return mNews.size();
+        }
+
+//        @Override
+//        public Parcelable saveState() {
+//            // do not save
+//            return new Bundle();
+//        }
+
+        @Override
+        public void restoreState(Parcelable state, ClassLoader loader) {
+            if (mShouldRestore) {
+                super.restoreState(state, loader);
+            }
+        }
+
     }
 
 }

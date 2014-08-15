@@ -16,4 +16,8 @@
     <string name="onboarding_microsoft">Login with Microsoft</string>
     <string name="onboarding_login_fail">Could not login</string>
 
+    <!-- Actions -->
+
+    <string name="action_share">Share</string>
+
 </resources>

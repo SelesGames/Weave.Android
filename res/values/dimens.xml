@@ -1,5 +1,9 @@
 <resources>
 
     <!-- <dimen name="article_header_height">100dp</dimen> -->
+    
+    <dimen name="social_menu_padding">20dp</dimen>
+    <dimen name="social_menu_radius_outer">140dp</dimen>
+    <dimen name="social_menu_radius_inner">60dp</dimen>
 
 </resources>

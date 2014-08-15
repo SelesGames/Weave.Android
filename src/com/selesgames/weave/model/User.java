@@ -41,21 +41,21 @@ public class User implements Parcelable {
     private User(Parcel in) {
         id = in.readString();
         feeds = new ArrayList<Feed>();
-        in.readTypedList(feeds, Feed.CREATOR);
+        in.readList(feeds, Feed.class.getClassLoader());
         previousLoginTime = new Date(in.readLong());
         currentLoginTime = new Date(in.readLong());
         latestNews = new ArrayList<News>();
-        in.readTypedList(latestNews, News.CREATOR);
+        in.readList(latestNews, News.class.getClassLoader());
         articleDeletionTimeForMarkedRead = in.readString();
         articleDeletionTimeForUnread = in.readString();
     }
 
     public void writeToParcel(Parcel out, int flags) {
         out.writeString(id);
-        out.writeTypedList(feeds);
+        out.writeList(feeds);
         out.writeLong(previousLoginTime.getTime());
         out.writeLong(currentLoginTime.getTime());
-        out.writeTypedList(latestNews);
+        out.writeList(latestNews);
         out.writeString(articleDeletionTimeForMarkedRead);
         out.writeString(articleDeletionTimeForUnread);
     }
