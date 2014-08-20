@@ -9,6 +9,7 @@ import javax.inject.Inject;
 
 import rx.Scheduler;
 import rx.functions.Action1;
+import rx.functions.Func1;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -16,6 +17,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,6 +26,7 @@ import android.widget.ProgressBar;
 import butterknife.InjectView;
 
 import com.selesgames.weave.ForActivity;
+import com.selesgames.weave.OnComputationThread;
 import com.selesgames.weave.OnMainThread;
 import com.selesgames.weave.R;
 import com.selesgames.weave.WeavePrefs;
@@ -32,23 +35,21 @@ import com.selesgames.weave.model.CategoryNews;
 import com.selesgames.weave.model.Feed;
 import com.selesgames.weave.model.News;
 import com.selesgames.weave.ui.BaseFragment;
+import com.selesgames.weave.ui.main.NewsGroup.NewsItem;
 import com.selesgames.weave.view.VerticalViewPager;
 import com.squareup.picasso.Picasso;
 
 public class CategoryFragment extends BaseFragment {
 
-    private static final String KEY_CATEGORY_ID = "category_id";
+    private static final String KEY_CATEGORY_ID = CategoryFragment.class.getCanonicalName() + ".category_id";
 
-    private static final String KEY_FORWARD = "forward";
-
-    private static final String KEY_NEWS = CategoryFragment.class.getCanonicalName() + ".news";
+    private static final String KEY_NEWS_GROUPS = CategoryFragment.class.getCanonicalName() + ".news_groups";
 
     private static final String KEY_FEEDS = CategoryFragment.class.getCanonicalName() + ".feeds";
 
     public static CategoryFragment newInstance(String categoryId) {
         Bundle b = new Bundle();
         b.putString(KEY_CATEGORY_ID, categoryId);
-        b.putBoolean(KEY_FORWARD, true);
 
         CategoryFragment f = new CategoryFragment();
         f.setArguments(b);
@@ -64,7 +65,11 @@ public class CategoryFragment extends BaseFragment {
 
     @Inject
     @OnMainThread
-    Scheduler mScheduler;
+    Scheduler mMainScheduler;
+
+    @Inject
+    @OnComputationThread
+    Scheduler mComputationScheduler;
 
     @Inject
     WeavePrefs mPrefs;
@@ -85,13 +90,11 @@ public class CategoryFragment extends BaseFragment {
 
     private String mCategoryId;
 
-    private List<News> mNews;
-
     private List<Feed> mFeeds;
 
     private Map<String, Feed> mFeedMap;
 
-    private boolean mForward;
+    private List<NewsGroup> mNewsGroups;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -99,8 +102,6 @@ public class CategoryFragment extends BaseFragment {
 
         Bundle b = getArguments();
         mCategoryId = b.getString(KEY_CATEGORY_ID);
-        mForward = b.getBoolean(KEY_FORWARD);
-        b.remove(KEY_FORWARD);
     }
 
     @Override
@@ -114,41 +115,52 @@ public class CategoryFragment extends BaseFragment {
 
         mFeedMap = new HashMap<String, Feed>();
 
-        if (savedInstanceState == null || mForward) {
-            mNews = new ArrayList<News>();
+        boolean restoreState = savedInstanceState == null || mCategoryId.equals(savedInstanceState.getString(KEY_CATEGORY_ID));
+        
+        if (savedInstanceState == null || !restoreState) {
+            mNewsGroups = new ArrayList<NewsGroup>();
             mFeeds = new ArrayList<Feed>();
         } else {
-            mNews = savedInstanceState.getParcelableArrayList(KEY_NEWS);
+            mNewsGroups = savedInstanceState.getParcelableArrayList(KEY_NEWS_GROUPS);
             mFeeds = savedInstanceState.getParcelableArrayList(KEY_FEEDS);
             populateFeedMap(mFeeds);
         }
 
-        mAdapter = new Adapter(getChildFragmentManager(), mNews, mFeedMap, !mForward);
+        mAdapter = new Adapter(getChildFragmentManager(), mNewsGroups, restoreState);
         mViewPager.setAdapter(mAdapter);
-        mAdapter.notifyDataSetChanged();
+        // mAdapter.notifyDataSetChanged();
     }
 
     @Override
     public void onViewStateRestored(Bundle savedInstanceState) {
         super.onViewStateRestored(savedInstanceState);
-        
+
+        // The page change listener is set here because setting it before the
+        // view is restored will trigger a page change. We can remove this hack
+        // if we maintain better state in the controller and be more selective
+        // in handling this event. (i.e. page change when restoring state, but
+        // we don't want the article loaded)
         mViewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-            
+
             @Override
             public void onPageSelected(int position) {
-                News news = mNews.get(position);
-                Feed feed = mFeedMap.get(news.getFeedId());
-                mController.onNewsFocussed(feed, news);
+                NewsGroup group = mNewsGroups.get(position);
+                if (group.getNews().size() == 1) {
+                    NewsItem item = group.getNews().get(0);
+                    mController.onNewsFocussed(item.feed, item.news);
+                } else {
+                    mController.onNewsUnfocussed();
+                }
             }
-            
+
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                
+
             }
-            
+
             @Override
             public void onPageScrollStateChanged(int state) {
-                
+
             }
         });
     }
@@ -157,7 +169,8 @@ public class CategoryFragment extends BaseFragment {
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        outState.putParcelableArrayList(KEY_NEWS, (ArrayList<News>) mNews);
+        outState.putString(KEY_CATEGORY_ID, mCategoryId);
+        outState.putParcelableArrayList(KEY_NEWS_GROUPS, (ArrayList<NewsGroup>) mNewsGroups);
         outState.putParcelableArrayList(KEY_FEEDS, (ArrayList<Feed>) mFeeds);
     }
 
@@ -165,31 +178,79 @@ public class CategoryFragment extends BaseFragment {
     public void onStart() {
         super.onStart();
 
-        if (mNews.isEmpty()) {
-            mUserService.getFeedsForCategory(mPrefs.getUserId(), mCategoryId, "Mark", 0, 20).observeOn(mScheduler)
-                    .subscribe(new Action1<CategoryNews>() {
+        if (mNewsGroups.isEmpty()) {
+            mUserService.getFeedsForCategory(mPrefs.getUserId(), mCategoryId, "Mark", 0, 20)
+                    .observeOn(mComputationScheduler).map(new Func1<CategoryNews, List<NewsGroup>>() {
 
                         @Override
-                        public void call(CategoryNews news) {
-                            mProgress.setVisibility(View.GONE);
+                        public List<NewsGroup> call(CategoryNews categoryNews) {
+                            List<NewsGroup> groups = new ArrayList<NewsGroup>();
 
-                            List<Feed> feeds = news.getFeeds();
+                            List<Feed> feeds = categoryNews.getFeeds();
                             mFeeds.removeAll(feeds);
                             mFeeds.addAll(feeds);
 
-                            populateFeedMap(news.getFeeds());
+                            populateFeedMap(categoryNews.getFeeds());
 
-                            mNews.addAll(news.getNews());
-                            mAdapter.notifyDataSetChanged();
+                            List<News> news = categoryNews.getNews();
 
-                            for (News n : news.getNews()) {
+                            for (News n : categoryNews.getNews()) {
                                 Picasso.with(mContext).load(n.getImageUrl()).fetch();
                             }
-                            
+
+                            int i = 0;
+                            while (i < news.size()) {
+                                NewsGroup group = new NewsGroup();
+                                News n = news.get(i);
+
+                                // Check next two items
+                                News newsOne = null;
+                                News newsTwo = null;
+                                if (i + 1 < news.size()) {
+                                    newsOne = news.get(i + 1);
+                                }
+                                if (i + 2 < news.size()) {
+                                    newsTwo = news.get(i + 2);
+                                }
+
+                                // Always add first news item
+                                group.addNews(n, mFeedMap.get(n.getFeedId()));
+
+                                boolean emptyZero = TextUtils.isEmpty(n.getImageUrl());
+                                boolean emptyOne = newsOne != null && TextUtils.isEmpty(newsOne.getImageUrl());
+                                boolean emptyTwo = newsTwo != null && TextUtils.isEmpty(newsTwo.getImageUrl());
+                                if (emptyZero || emptyOne || emptyTwo) {
+                                    if (newsOne != null) {
+                                        group.addNews(newsOne, mFeedMap.get(newsOne.getFeedId()));
+                                    }
+                                    if (newsTwo != null) {
+                                        group.addNews(newsTwo, mFeedMap.get(newsTwo.getFeedId()));
+                                    }
+                                }
+
+                                groups.add(group);
+
+                                i += group.getNews().size();
+                            }
+
+                            return groups;
+                        }
+
+                    }).observeOn(mMainScheduler).subscribe(new Action1<List<NewsGroup>>() {
+
+                        @Override
+                        public void call(List<NewsGroup> groups) {
+                            mProgress.setVisibility(View.GONE);
+
+                            mNewsGroups.addAll(groups);
+                            mAdapter.notifyDataSetChanged();
+
                             // Focus the first item
-                            News n = mNews.get(0);
-                            Feed feed = mFeedMap.get(n.getFeedId());
-                            mController.onNewsFocussed(feed, n);
+                            NewsGroup group = mNewsGroups.get(0);
+                            if (group.getNews().size() == 1) {
+                                NewsItem item = group.getNews().get(0);
+                                mController.onNewsFocussed(item.feed, item.news);
+                            }
                         }
 
                     }, new Action1<Throwable>() {
@@ -212,40 +273,36 @@ public class CategoryFragment extends BaseFragment {
 
     private static class Adapter extends FragmentStatePagerAdapter {
 
-        private List<News> mNews;
+        private List<NewsGroup> mNewsGroups;
 
-        private Map<String, Feed> mFeedMap;
+        private boolean mRestoreState;
         
-        private boolean mShouldRestore;
-
-        public Adapter(FragmentManager fm, List<News> news, Map<String, Feed> feedMap, boolean shouldRestore) {
+        public Adapter(FragmentManager fm, List<NewsGroup> newsGroups, boolean restoreState) {
             super(fm);
-            mNews = news;
-            mFeedMap = feedMap;
-            mShouldRestore = shouldRestore;
+            mNewsGroups = newsGroups;
+            mRestoreState = restoreState;
         }
 
         @Override
         public Fragment getItem(int position) {
-            News news = mNews.get(position);
-            Feed feed = mFeedMap.get(news.getFeedId());
-            return NewsFragment.newInstance(feed, news);
+            NewsGroup group = mNewsGroups.get(position);
+            List<NewsItem> items = group.getNews();
+            if (items.size() == 1) {
+                NewsItem item = items.get(0);
+                return NewsFragment.newInstance(item.feed, item.news);
+            } else {
+                return NewsGroupFragment.newInstance(group);
+            }
         }
 
         @Override
         public int getCount() {
-            return mNews.size();
+            return mNewsGroups.size();
         }
-
-//        @Override
-//        public Parcelable saveState() {
-//            // do not save
-//            return new Bundle();
-//        }
 
         @Override
         public void restoreState(Parcelable state, ClassLoader loader) {
-            if (mShouldRestore) {
+            if (mRestoreState) {
                 super.restoreState(state, loader);
             }
         }

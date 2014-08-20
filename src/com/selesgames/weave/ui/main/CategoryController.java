@@ -6,5 +6,7 @@ import com.selesgames.weave.model.News;
 public interface CategoryController {
 
     void onNewsFocussed(Feed feed, News news);
+    
+    void onNewsUnfocussed();
 
 }

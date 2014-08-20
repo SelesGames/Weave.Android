@@ -11,7 +11,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.widget.Button;
 import android.widget.ImageButton;
 import butterknife.InjectView;
 
@@ -32,11 +31,11 @@ public class ArticleActionsFragment extends BaseFragment {
 
     public static final String KEY_ARTICLE = "article";
 
-    public static ArticleActionsFragment newInstance(Feed feed, News news, Article arcitle) {
+    public static ArticleActionsFragment newInstance(Feed feed, News news, Article article) {
         Bundle b = new Bundle();
         b.putParcelable(KEY_FEED, feed);
         b.putParcelable(KEY_NEWS, news);
-        b.putParcelable(KEY_ARTICLE, arcitle);
+        b.putParcelable(KEY_ARTICLE, article);
 
         ArticleActionsFragment f = new ArticleActionsFragment();
         f.setArguments(b);

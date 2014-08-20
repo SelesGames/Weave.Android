@@ -15,6 +15,7 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.util.Log;
 import android.view.Display;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -32,7 +33,16 @@ import com.selesgames.weave.ui.onboarding.OnboardingActivity;
 import dagger.Module;
 import dagger.Provides;
 
-public class MainActivity extends BaseActivity implements CategoriesController, CategoryController, NewsController, ArticleController {
+public class MainActivity extends BaseActivity implements CategoriesController, CategoryController, NewsController,
+        ArticleController {
+
+    private static final String KEY_CATEGORY = MainActivity.class.getCanonicalName() + ".category";
+
+    private static final String KEY_FEED = MainActivity.class.getCanonicalName() + ".feed";
+
+    private static final String KEY_NEWS = MainActivity.class.getCanonicalName() + ".news";
+
+    private static final String KEY_ARTICLE = MainActivity.class.getCanonicalName() + ".article";
 
     @Inject
     @ForActivity
@@ -48,6 +58,14 @@ public class MainActivity extends BaseActivity implements CategoriesController, 
 
     private List<Fragment> mFragments;
 
+    private String mCategory;
+
+    private Feed mFeed;
+
+    private News mNews;
+
+    private Article mArticle;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,9 +79,27 @@ public class MainActivity extends BaseActivity implements CategoriesController, 
         setContentView(R.layout.activity_main);
         ButterKnife.inject(this);
 
+        // Load fragments
         mFragments = new ArrayList<Fragment>();
-//        mFragments.add(ArticleActionsFragment.newInstance(null, null, null));
+        // mFragments.add(ArticleActionsFragment.newInstance(null, null, null));
         mFragments.add(CategoriesFragment.newInstance());
+        if (savedInstanceState != null) {
+            mCategory = savedInstanceState.getString(KEY_CATEGORY);
+            if (mCategory != null) {
+                mFragments.add(CategoryFragment.newInstance(mCategory));
+            }
+
+            mFeed = savedInstanceState.getParcelable(KEY_FEED);
+            mNews = savedInstanceState.getParcelable(KEY_NEWS);
+            if (mFeed != null && mNews != null) {
+                mFragments.add(ArticleFragment.newInstance(mFeed, mNews));
+
+                mArticle = savedInstanceState.getParcelable(KEY_ARTICLE);
+                if (mArticle != null) {
+                    mFragments.add(ArticleActionsFragment.newInstance(mFeed, mNews, mArticle));
+                }
+            }
+        }
 
         mAdapter = new Adapter(getSupportFragmentManager(), mFragments);
         mViewPager.setAdapter(mAdapter);
@@ -84,9 +120,19 @@ public class MainActivity extends BaseActivity implements CategoriesController, 
 
             @Override
             public void onPageScrollStateChanged(int state) {
-                
+
             }
         });
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putString(KEY_CATEGORY, mCategory);
+        outState.putParcelable(KEY_FEED, mFeed);
+        outState.putParcelable(KEY_NEWS, mNews);
+        outState.putParcelable(KEY_ARTICLE, mArticle);
     }
 
     // Custom pager
@@ -102,6 +148,7 @@ public class MainActivity extends BaseActivity implements CategoriesController, 
 
         @Override
         public Fragment getItem(int position) {
+            Log.d("TEST", "getItem: " + position);
             return mFragments.get(position);
         }
 
@@ -112,33 +159,69 @@ public class MainActivity extends BaseActivity implements CategoriesController, 
 
         @Override
         public int getItemPosition(Object object) {
-            return mFragments.indexOf(object) > -1 ? PagerAdapter.POSITION_UNCHANGED : PagerAdapter.POSITION_NONE;
+            Fragment f = (Fragment) object;
+            for (Fragment frag : mFragments) {
+                if (frag.getClass().getCanonicalName().equals(f.getClass().getCanonicalName())) {
+                    Log.d("TEST", "getItemPosition: UNCHANGED");
+                    return PagerAdapter.POSITION_UNCHANGED;
+                }
+            }
+            Log.d("TEST", "getItemPosition: NONE");
+            return PagerAdapter.POSITION_NONE;
+            // return mFragments.indexOf(object) > -1 ?
+            // PagerAdapter.POSITION_UNCHANGED : PagerAdapter.POSITION_NONE;
         }
 
     }
 
     @Override
     public void onCategorySelected(String category) {
+        int currentIndex = mViewPager.getCurrentItem();
+        if (mCategory != null && mCategory.equals(category)) {
+            int position = currentIndex + 1;
+            if (position < mAdapter.getCount()) {
+                mViewPager.setCurrentItem(position, true);
+            }
+        } else {
+            // Keep for saved state
+            mCategory = category;
+
+            // Remove anything to the right
+            for (int i = mFragments.size() - 1; i > currentIndex; i--) {
+                mFragments.remove(i);
+            }
+
+            // Must notify data set changed twice so that fragment is actually
+            // removed (comparison is done using fragment class name).
+            // Alternatively we could add a method to the fragment to load a new
+            // item rather than destroying and recreating it.
+            mAdapter.notifyDataSetChanged();
+
+            // Add new view
+            Fragment f = CategoryFragment.newInstance(category);
+            mFragments.add(f);
+            mAdapter.notifyDataSetChanged();
+            mViewPager.setCurrentItem(mAdapter.getCount() - 1, true);
+        }
+    }
+
+    @Override
+    public void onNewsFocussed(Feed feed, News news) {
+        // Keep for saved state
+        mFeed = feed;
+        mNews = news;
+
         // Remove anything to the right
         int currentIndex = mViewPager.getCurrentItem();
         for (int i = mFragments.size() - 1; i > currentIndex; i--) {
             mFragments.remove(i);
         }
 
-        // Add new view
-        Fragment f = CategoryFragment.newInstance(category);
-        mFragments.add(f);
+        // Must notify data set changed twice so that fragment is actually
+        // removed (comparison is done using fragment class name).
+        // Alternatively we could add a method to the fragment to load a new
+        // item rather than destroying and recreating it.
         mAdapter.notifyDataSetChanged();
-        mViewPager.setCurrentItem(mAdapter.getCount() - 1, true);
-    }
-    
-    @Override
-    public void onNewsFocussed(Feed feed, News news) {
-     // Remove anything to the right
-        int currentIndex = mViewPager.getCurrentItem();
-        for (int i = mFragments.size() - 1; i > currentIndex; i--) {
-            mFragments.remove(i);
-        }
 
         Fragment f = ArticleFragment.newInstance(feed, news);
         mFragments.add(f);
@@ -146,26 +229,55 @@ public class MainActivity extends BaseActivity implements CategoriesController, 
     }
 
     @Override
-    public void onNewsSelected(Feed feed, News news) {
+    public void onNewsUnfocussed() {
+        // Set for saved state
+        mFeed = null;
+        mNews = null;
+
         // Remove anything to the right
-//        int currentIndex = mViewPager.getCurrentItem();
-//        for (int i = mFragments.size() - 1; i > currentIndex; i--) {
-//            mFragments.remove(i);
-//        }
-//
-//        Fragment f = ArticleFragment.newInstance(feed, news);
-//        mFragments.add(f);
-//        mAdapter.notifyDataSetChanged();
-//        mViewPager.setCurrentItem(mAdapter.getCount() - 1, true);
-        
-        int position = mViewPager.getCurrentItem() + 1;
-        if (position < mAdapter.getCount()) {
-            mViewPager.setCurrentItem(position, true);
+        int currentIndex = mViewPager.getCurrentItem();
+        for (int i = mFragments.size() - 1; i > currentIndex; i--) {
+            mFragments.remove(i);
+        }
+        mAdapter.notifyDataSetChanged();
+    }
+
+    // TODO: Keep track of currently shown news and only load a new fragment
+    // when necessary
+    @Override
+    public void onNewsSelected(Feed feed, News news) {
+        int currentIndex = mViewPager.getCurrentItem();
+        if (mFeed != null && mFeed.equals(feed) && mNews != null && mNews.equals(news)) {
+            int position = currentIndex + 1;
+            if (position < mAdapter.getCount()) {
+                mViewPager.setCurrentItem(position, true);
+            }
+        } else {
+            // Keep for saved state
+            mFeed = feed;
+            mNews = news;
+
+            // Remove anything to the right
+            for (int i = mFragments.size() - 1; i > currentIndex; i--) {
+                mFragments.remove(i);
+            }
+
+            // Must notify data set changed twice so that fragment is actually
+            // removed (comparison is done using fragment class name).
+            // Alternatively we could add a method to the fragment to load a new
+            // item rather than destroying and recreating it.
+            mAdapter.notifyDataSetChanged();
+
+            Fragment f = ArticleFragment.newInstance(feed, news);
+            mFragments.add(f);
+            mAdapter.notifyDataSetChanged();
+            mViewPager.setCurrentItem(mAdapter.getCount() - 1, true);
         }
     }
 
     @Override
     public void onArticleLoaded(Feed feed, News news, Article article) {
+        mArticle = article;
         Fragment f = ArticleActionsFragment.newInstance(feed, news, article);
         mFragments.add(f);
         mAdapter.notifyDataSetChanged();
@@ -178,8 +290,8 @@ public class MainActivity extends BaseActivity implements CategoriesController, 
         return modules;
     }
 
-    @Module(injects = { MainActivity.class, CategoriesFragment.class, CategoryFragment.class, NewsFragment.class, ArticleFragment.class,
-            ArticleActionsFragment.class }, addsTo = ActivityModule.class)
+    @Module(injects = { MainActivity.class, CategoriesFragment.class, CategoryFragment.class, NewsFragment.class,
+            NewsGroupFragment.class, ArticleFragment.class, ArticleActionsFragment.class }, addsTo = ActivityModule.class)
     public class MainActivityModule {
 
         @Provides
@@ -191,7 +303,7 @@ public class MainActivity extends BaseActivity implements CategoriesController, 
         CategoryController provideCategoryController() {
             return MainActivity.this;
         }
-        
+
         @Provides
         NewsController provideNewsController() {
             return MainActivity.this;
@@ -201,7 +313,7 @@ public class MainActivity extends BaseActivity implements CategoriesController, 
         ArticleController provideArticleController() {
             return MainActivity.this;
         }
-        
+
         @Provides
         Point provideScreenSize() {
             Point point = new Point();

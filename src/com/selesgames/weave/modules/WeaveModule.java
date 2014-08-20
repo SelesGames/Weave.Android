@@ -13,6 +13,7 @@ import android.os.Looper;
 import com.selesgames.weave.BuildConfig;
 import com.selesgames.weave.Debug;
 import com.selesgames.weave.ForApplication;
+import com.selesgames.weave.OnComputationThread;
 import com.selesgames.weave.OnMainThread;
 import com.selesgames.weave.WeaveApplication;
 import com.selesgames.weave.WeavePrefs;
@@ -23,6 +24,7 @@ import dagger.Provides;
 
 @Module(library = true, includes = { NetworkModule.class })
 public class WeaveModule {
+
     private final WeaveApplication application;
 
     public WeaveModule(WeaveApplication application) {
@@ -54,6 +56,13 @@ public class WeaveModule {
                 handler.post(command);
             }
         });
+    }
+
+    @Provides
+    @Singleton
+    @OnComputationThread
+    Scheduler provideComputationThread() {
+        return Schedulers.computation();
     }
 
     @Provides

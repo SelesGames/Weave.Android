@@ -2,6 +2,7 @@ package com.selesgames.weave.ui.main;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
 
 import javax.inject.Inject;
@@ -155,7 +156,11 @@ public class ArticleFragment extends BaseFragment {
             if (mFormatter == null) {
                 SimpleDateFormat dateFormat = new SimpleDateFormat("cccc, MMMM dd h:mma", Locale.getDefault());
                 dateFormat.setTimeZone(Calendar.getInstance().getTimeZone());
-                String publishedAt = dateFormat.format(mArticle.getDatePublished());
+                Date publishedDate = mArticle.getDatePublished();
+                String publishedAt = "";
+                if (publishedDate != null) {
+                    publishedAt = dateFormat.format(publishedDate);
+                }
 
                 mFormatter = new Formatter(mContext, mFeed.getName(), mArticle.getTitle(), mNews.getImageUrl(),
                         mArticle.getUrl(), publishedAt, "#000000", "#FFFFFF", "Arial", "18px", "#FF0000", "12px");
