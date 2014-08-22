@@ -7,7 +7,9 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import rx.Observable;
 import rx.Scheduler;
+import rx.functions.Action0;
 import rx.functions.Action1;
 import rx.functions.Func1;
 import android.content.Context;
@@ -46,6 +48,11 @@ public class CategoryFragment extends BaseFragment {
     private static final String KEY_NEWS_GROUPS = CategoryFragment.class.getCanonicalName() + ".news_groups";
 
     private static final String KEY_FEEDS = CategoryFragment.class.getCanonicalName() + ".feeds";
+
+    private static final int NEWS_ITEM_TAKE = 20;
+
+    /** Number of pages away from end before more news loads */
+    private static final int LOAD_MORE_THRESHOLD = 4;
 
     public static CategoryFragment newInstance(String categoryId) {
         Bundle b = new Bundle();
@@ -96,6 +103,10 @@ public class CategoryFragment extends BaseFragment {
 
     private List<NewsGroup> mNewsGroups;
 
+    private int mLastPage;
+
+    private boolean mLoading;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -115,8 +126,9 @@ public class CategoryFragment extends BaseFragment {
 
         mFeedMap = new HashMap<String, Feed>();
 
-        boolean restoreState = savedInstanceState == null || mCategoryId.equals(savedInstanceState.getString(KEY_CATEGORY_ID));
-        
+        boolean restoreState = savedInstanceState == null
+                || mCategoryId.equals(savedInstanceState.getString(KEY_CATEGORY_ID));
+
         if (savedInstanceState == null || !restoreState) {
             mNewsGroups = new ArrayList<NewsGroup>();
             mFeeds = new ArrayList<Feed>();
@@ -151,6 +163,33 @@ public class CategoryFragment extends BaseFragment {
                 } else {
                     mController.onNewsUnfocussed();
                 }
+
+                // Load more
+                if (mAdapter.getCount() - 1 - position < LOAD_MORE_THRESHOLD && !mLoading) {
+                    mLoading = true;
+                    loadNews(++mLastPage).observeOn(mMainScheduler).subscribe(new Action1<List<NewsGroup>>() {
+
+                        @Override
+                        public void call(List<NewsGroup> groups) {
+                            mNewsGroups.addAll(groups);
+                            mAdapter.notifyDataSetChanged();
+                        }
+
+                    }, new Action1<Throwable>() {
+
+                        @Override
+                        public void call(Throwable t) {
+                            Log.e("WEAVE", "Could not load news", t);
+                        }
+                    }, new Action0() {
+
+                        @Override
+                        public void call() {
+                            mLoading = false;
+                        }
+                    });
+                    ;
+                }
             }
 
             @Override
@@ -179,90 +218,103 @@ public class CategoryFragment extends BaseFragment {
         super.onStart();
 
         if (mNewsGroups.isEmpty()) {
-            mUserService.getFeedsForCategory(mPrefs.getUserId(), mCategoryId, "Mark", 0, 20)
-                    .observeOn(mComputationScheduler).map(new Func1<CategoryNews, List<NewsGroup>>() {
+            // Load first page
+            mLoading = true;
+            loadNews(0).observeOn(mMainScheduler).subscribe(new Action1<List<NewsGroup>>() {
 
-                        @Override
-                        public List<NewsGroup> call(CategoryNews categoryNews) {
-                            List<NewsGroup> groups = new ArrayList<NewsGroup>();
+                @Override
+                public void call(List<NewsGroup> groups) {
+                    mProgress.setVisibility(View.GONE);
 
-                            List<Feed> feeds = categoryNews.getFeeds();
-                            mFeeds.removeAll(feeds);
-                            mFeeds.addAll(feeds);
+                    mNewsGroups.addAll(groups);
+                    mAdapter.notifyDataSetChanged();
 
-                            populateFeedMap(categoryNews.getFeeds());
+                    // Focus the first item
+                    NewsGroup group = mNewsGroups.get(0);
+                    if (group.getNews().size() == 1) {
+                        NewsItem item = group.getNews().get(0);
+                        mController.onNewsFocussed(item.feed, item.news);
+                    }
+                }
 
-                            List<News> news = categoryNews.getNews();
+            }, new Action1<Throwable>() {
 
-                            for (News n : categoryNews.getNews()) {
-                                Picasso.with(mContext).load(n.getImageUrl()).fetch();
-                            }
+                @Override
+                public void call(Throwable t) {
+                    Log.e("WEAVE", "Could not load news", t);
+                }
+            }, new Action0() {
 
-                            int i = 0;
-                            while (i < news.size()) {
-                                NewsGroup group = new NewsGroup();
-                                News n = news.get(i);
-
-                                // Check next two items
-                                News newsOne = null;
-                                News newsTwo = null;
-                                if (i + 1 < news.size()) {
-                                    newsOne = news.get(i + 1);
-                                }
-                                if (i + 2 < news.size()) {
-                                    newsTwo = news.get(i + 2);
-                                }
-
-                                // Always add first news item
-                                group.addNews(n, mFeedMap.get(n.getFeedId()));
-
-                                boolean emptyZero = TextUtils.isEmpty(n.getImageUrl());
-                                boolean emptyOne = newsOne != null && TextUtils.isEmpty(newsOne.getImageUrl());
-                                boolean emptyTwo = newsTwo != null && TextUtils.isEmpty(newsTwo.getImageUrl());
-                                if (emptyZero || emptyOne || emptyTwo) {
-                                    if (newsOne != null) {
-                                        group.addNews(newsOne, mFeedMap.get(newsOne.getFeedId()));
-                                    }
-                                    if (newsTwo != null) {
-                                        group.addNews(newsTwo, mFeedMap.get(newsTwo.getFeedId()));
-                                    }
-                                }
-
-                                groups.add(group);
-
-                                i += group.getNews().size();
-                            }
-
-                            return groups;
-                        }
-
-                    }).observeOn(mMainScheduler).subscribe(new Action1<List<NewsGroup>>() {
-
-                        @Override
-                        public void call(List<NewsGroup> groups) {
-                            mProgress.setVisibility(View.GONE);
-
-                            mNewsGroups.addAll(groups);
-                            mAdapter.notifyDataSetChanged();
-
-                            // Focus the first item
-                            NewsGroup group = mNewsGroups.get(0);
-                            if (group.getNews().size() == 1) {
-                                NewsItem item = group.getNews().get(0);
-                                mController.onNewsFocussed(item.feed, item.news);
-                            }
-                        }
-
-                    }, new Action1<Throwable>() {
-
-                        @Override
-                        public void call(Throwable t) {
-                            Log.e("WEAVE", "Could not load news", t);
-                        }
-                    });
+                @Override
+                public void call() {
+                    mLoading = false;
+                }
+            });
         } else {
             mProgress.setVisibility(View.GONE);
         }
+    }
+
+    private Observable<List<NewsGroup>> loadNews(int page) {
+        return mUserService
+                .getFeedsForCategory(mPrefs.getUserId(), mCategoryId, "Mark", NEWS_ITEM_TAKE * page, NEWS_ITEM_TAKE)
+                .observeOn(mComputationScheduler).map(new Func1<CategoryNews, List<NewsGroup>>() {
+
+                    @Override
+                    public List<NewsGroup> call(CategoryNews categoryNews) {
+                        List<NewsGroup> groups = new ArrayList<NewsGroup>();
+
+                        List<Feed> feeds = categoryNews.getFeeds();
+                        mFeeds.removeAll(feeds);
+                        mFeeds.addAll(feeds);
+
+                        populateFeedMap(categoryNews.getFeeds());
+
+                        List<News> news = categoryNews.getNews();
+
+                        for (News n : categoryNews.getNews()) {
+                            Picasso.with(mContext).load(n.getImageUrl()).fetch();
+                        }
+
+                        int i = 0;
+                        while (i < news.size()) {
+                            NewsGroup group = new NewsGroup();
+                            News n = news.get(i);
+
+                            // Check next two items
+                            News newsOne = null;
+                            News newsTwo = null;
+                            if (i + 1 < news.size()) {
+                                newsOne = news.get(i + 1);
+                            }
+                            if (i + 2 < news.size()) {
+                                newsTwo = news.get(i + 2);
+                            }
+
+                            // Always add first news item
+                            group.addNews(n, mFeedMap.get(n.getFeedId()));
+
+                            boolean emptyZero = TextUtils.isEmpty(n.getImageUrl());
+                            boolean emptyOne = newsOne != null && TextUtils.isEmpty(newsOne.getImageUrl());
+                            boolean emptyTwo = newsTwo != null && TextUtils.isEmpty(newsTwo.getImageUrl());
+                            if (emptyZero || emptyOne || emptyTwo) {
+                                if (newsOne != null) {
+                                    group.addNews(newsOne, mFeedMap.get(newsOne.getFeedId()));
+                                }
+                                if (newsTwo != null) {
+                                    group.addNews(newsTwo, mFeedMap.get(newsTwo.getFeedId()));
+                                }
+                            }
+
+                            groups.add(group);
+
+                            i += group.getNews().size();
+                        }
+
+                        return groups;
+                    }
+
+                });
     }
 
     private void populateFeedMap(List<Feed> feeds) {
@@ -276,7 +328,7 @@ public class CategoryFragment extends BaseFragment {
         private List<NewsGroup> mNewsGroups;
 
         private boolean mRestoreState;
-        
+
         public Adapter(FragmentManager fm, List<NewsGroup> newsGroups, boolean restoreState) {
             super(fm);
             mNewsGroups = newsGroups;
