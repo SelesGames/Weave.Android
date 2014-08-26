@@ -20,12 +20,12 @@
 
         <TextView
             android:id="@+id/title"
+            style="@style/Text.Dark"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:lineSpacingExtra="6dp"
             android:padding="6dp"
             android:text="The Guardians of the Galaxy are pinball wizards in Zen Pinball 2"
-            android:textColor="@color/secondary"
             android:textSize="22sp" />
 
         <LinearLayout
@@ -35,11 +35,11 @@
 
             <TextView
                 android:id="@+id/source"
+                style="@style/Text.Dark"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Joystiq.com"
-                android:textColor="@color/secondary" />
+                android:text="Joystiq.com" />
 
             <!--
                  <TextView
@@ -53,13 +53,13 @@
 
             <TextView
                 android:id="@+id/time"
+                style="@style/Text.Dark"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="right"
                 android:layout_weight="1"
                 android:gravity="right"
-                android:text="2:30p"
-                android:textColor="@color/secondary" />
+                android:text="2:30p" />
         </LinearLayout>
     </LinearLayout>
 
@@ -67,7 +67,7 @@
         android:id="@+id/progress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
+        android:layout_gravity="center"
         android:indeterminate="true"
         android:indeterminateDrawable="@drawable/loading"
         android:visibility="gone" />

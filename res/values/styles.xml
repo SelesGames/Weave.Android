@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!--
         Base application theme, dependent on API level. This theme is replaced
@@ -17,4 +17,23 @@
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
     </style>
 
+    <!-- Light theme -->
+    <style name="AppTheme.Light">
+        <item name="textColor">@color/text_color_light</item>
+        <item name="backgroundColor">@color/background_color_light</item>
+    </style>
+
+    <!-- Dark theme -->
+    <style name="AppTheme.Dark">
+        <item name="textColor">@color/text_color_dark</item>
+        <item name="backgroundColor">@color/background_color_dark</item>
+    </style>
+
+    <style name="Text">
+        <item name="android:textColor">?textColor</item>
+    </style>
+
+    <style name="Text.Dark">
+        <item name="android:textColor">@color/text_color_dark</item>
+    </style>
 </resources>

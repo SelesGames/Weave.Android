@@ -10,8 +10,10 @@ import javax.inject.Inject;
 import rx.Scheduler;
 import rx.functions.Action1;
 import android.content.Context;
+import android.content.res.Resources.Theme;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -161,9 +163,18 @@ public class ArticleFragment extends BaseFragment {
                 if (publishedDate != null) {
                     publishedAt = dateFormat.format(publishedDate);
                 }
+                
+                TypedValue typedValue = new TypedValue();
+                Theme theme = mContext.getTheme();
+                // Background color
+                theme.resolveAttribute(R.attr.backgroundColor, typedValue, true);
+                String backgroundColor = String.format("#%06X", (0xFFFFFF & typedValue.data));
+                // Text color
+                theme.resolveAttribute(R.attr.textColor, typedValue, true);
+                String textColor = String.format("#%06X", (0xFFFFFF & typedValue.data)); 
 
                 mFormatter = new Formatter(mContext, mFeed.getName(), mArticle.getTitle(), mNews.getImageUrl(),
-                        mArticle.getUrl(), publishedAt, "#000000", "#FFFFFF", "Arial", "18px", "#FF0000", "12px");
+                        mArticle.getUrl(), publishedAt, textColor, backgroundColor, "Arial", "18px", "#FF0000", "12px");
             }
             String html = mFormatter.createHtml(mArticle.getContent());
             mWebView.loadDataWithBaseURL(null, html, "text/html", "utf-8", null);

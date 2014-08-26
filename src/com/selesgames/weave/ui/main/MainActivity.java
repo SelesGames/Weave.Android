@@ -33,7 +33,7 @@ import com.selesgames.weave.ui.onboarding.OnboardingActivity;
 import dagger.Module;
 import dagger.Provides;
 
-public class MainActivity extends BaseActivity implements CategoriesController, CategoryController, NewsController,
+public class MainActivity extends BaseActivity implements SettingsController, CategoriesController, CategoryController, NewsController,
         ArticleController {
 
     private static final String KEY_CATEGORY = MainActivity.class.getCanonicalName() + ".category";
@@ -70,6 +70,9 @@ public class MainActivity extends BaseActivity implements CategoriesController, 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // Set the theme
+        setTheme(mPrefs.getThemeId() == 0 ? R.style.AppTheme_Light : R.style.AppTheme_Dark);
+        
         if (mPrefs.getUserId() == null) {
             startActivity(new Intent(mContext, OnboardingActivity.class));
             finish();
@@ -80,9 +83,11 @@ public class MainActivity extends BaseActivity implements CategoriesController, 
         ButterKnife.inject(this);
 
         // Load fragments
-        mFragments = new ArrayList<Fragment>();
         // mFragments.add(ArticleActionsFragment.newInstance(null, null, null));
-        mFragments.add(CategoriesFragment.newInstance());
+        mFragments = new ArrayList<Fragment>();
+        mFragments.add(SettingsFragment.newInstance());
+        Fragment categoriesFragment = CategoriesFragment.newInstance();
+        mFragments.add(categoriesFragment);
         if (savedInstanceState != null) {
             mCategory = savedInstanceState.getString(KEY_CATEGORY);
             if (mCategory != null) {
@@ -103,6 +108,7 @@ public class MainActivity extends BaseActivity implements CategoriesController, 
 
         mAdapter = new Adapter(getSupportFragmentManager(), mFragments);
         mViewPager.setAdapter(mAdapter);
+        mViewPager.setCurrentItem(mFragments.indexOf(categoriesFragment), false);
         mViewPager.setOnPageChangeListener(new OnPageChangeListener() {
 
             @Override
@@ -172,6 +178,11 @@ public class MainActivity extends BaseActivity implements CategoriesController, 
             // PagerAdapter.POSITION_UNCHANGED : PagerAdapter.POSITION_NONE;
         }
 
+    }
+    
+    @Override
+    public void onThemeChanged() {
+        recreate();
     }
 
     @Override
@@ -290,10 +301,15 @@ public class MainActivity extends BaseActivity implements CategoriesController, 
         return modules;
     }
 
-    @Module(injects = { MainActivity.class, CategoriesFragment.class, CategoryFragment.class, NewsFragment.class,
-            NewsGroupFragment.class, ArticleFragment.class, ArticleActionsFragment.class }, addsTo = ActivityModule.class)
+    @Module(injects = { MainActivity.class, SettingsFragment.class, CategoriesFragment.class, CategoryFragment.class,
+            NewsFragment.class, NewsGroupFragment.class, ArticleFragment.class, ArticleActionsFragment.class }, addsTo = ActivityModule.class)
     public class MainActivityModule {
 
+        @Provides
+        SettingsController provideSettingsController() {
+            return MainActivity.this;
+        }
+        
         @Provides
         CategoriesController provideCategoriesController() {
             return MainActivity.this;

@@ -16,6 +16,12 @@
     <string name="onboarding_microsoft">Login with Microsoft</string>
     <string name="onboarding_login_fail">Could not login</string>
 
+    <!-- Settings -->
+
+    <string name="settings">Settings</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+
     <!-- Actions -->
 
     <string name="action_share">Share</string>

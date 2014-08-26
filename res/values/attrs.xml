@@ -6,4 +6,9 @@
         <attr name="transitionTime" format="integer" />
     </declare-styleable>
 
+    <!-- Theme attributes -->
+
+    <attr name="textColor" format="color" />
+    <attr name="backgroundColor" format="color" />
+
 </resources>
