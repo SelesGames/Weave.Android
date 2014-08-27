@@ -30,7 +30,7 @@ public class WeavePrefs {
     }
     
     public int getThemeId() {
-        return mSharedPreferences.getInt(KEY_THEME_ID, R.style.AppTheme_Light);
+        return mSharedPreferences.getInt(KEY_THEME_ID, 0);
     }
 
 }

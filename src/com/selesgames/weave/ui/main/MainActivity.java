@@ -20,6 +20,8 @@ import android.view.Display;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.selesgames.weave.ForActivity;
 import com.selesgames.weave.R;
 import com.selesgames.weave.WeavePrefs;
@@ -33,8 +35,8 @@ import com.selesgames.weave.ui.onboarding.OnboardingActivity;
 import dagger.Module;
 import dagger.Provides;
 
-public class MainActivity extends BaseActivity implements SettingsController, CategoriesController, CategoryController, NewsController,
-        ArticleController {
+public class MainActivity extends BaseActivity implements SettingsController, CategoriesController, CategoryController,
+        NewsController, ArticleController {
 
     private static final String KEY_CATEGORY = MainActivity.class.getCanonicalName() + ".category";
 
@@ -50,6 +52,9 @@ public class MainActivity extends BaseActivity implements SettingsController, Ca
 
     @Inject
     WeavePrefs mPrefs;
+
+    @Inject
+    Tracker mTracker;
 
     @InjectView(R.id.pager)
     ViewPager mViewPager;
@@ -72,7 +77,11 @@ public class MainActivity extends BaseActivity implements SettingsController, Ca
 
         // Set the theme
         setTheme(mPrefs.getThemeId() == 0 ? R.style.AppTheme_Light : R.style.AppTheme_Dark);
-        
+
+        // Analytics
+        mTracker.setScreenName(getClass().getSimpleName());
+        mTracker.send(new HitBuilders.AppViewBuilder().build());
+
         if (mPrefs.getUserId() == null) {
             startActivity(new Intent(mContext, OnboardingActivity.class));
             finish();
@@ -117,6 +126,9 @@ public class MainActivity extends BaseActivity implements SettingsController, Ca
                 if (f instanceof OnFragmentSelectedListener) {
                     ((OnFragmentSelectedListener) f).onFragmentSelected();
                 }
+
+                mTracker.setScreenName(f.getClass().getSimpleName());
+                mTracker.send(new HitBuilders.AppViewBuilder().build());
             }
 
             @Override
@@ -179,7 +191,7 @@ public class MainActivity extends BaseActivity implements SettingsController, Ca
         }
 
     }
-    
+
     @Override
     public void onThemeChanged() {
         recreate();
@@ -302,14 +314,15 @@ public class MainActivity extends BaseActivity implements SettingsController, Ca
     }
 
     @Module(injects = { MainActivity.class, SettingsFragment.class, CategoriesFragment.class, CategoryFragment.class,
-            NewsFragment.class, NewsGroupFragment.class, ArticleFragment.class, ArticleActionsFragment.class }, addsTo = ActivityModule.class)
+            NewsFragment.class, NewsGroupFragment.class, ArticleFragment.class, ArticleActionsFragment.class,
+            AdFragment.class }, addsTo = ActivityModule.class)
     public class MainActivityModule {
 
         @Provides
         SettingsController provideSettingsController() {
             return MainActivity.this;
         }
-        
+
         @Provides
         CategoriesController provideCategoriesController() {
             return MainActivity.this;

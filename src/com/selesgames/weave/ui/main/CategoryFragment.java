@@ -337,7 +337,10 @@ public class CategoryFragment extends BaseFragment {
 
         @Override
         public Fragment getItem(int position) {
-            NewsGroup group = mNewsGroups.get(position);
+            if (position == 0) {
+                return AdFragment.newInstance();
+            }
+            NewsGroup group = mNewsGroups.get(position - 1); // TODO: Remove -1 when ads are blended in!
             List<NewsItem> items = group.getNews();
             if (items.size() == 1) {
                 NewsItem item = items.get(0);
@@ -349,7 +352,7 @@ public class CategoryFragment extends BaseFragment {
 
         @Override
         public int getCount() {
-            return mNewsGroups.size();
+            return mNewsGroups.size() + 1; // TODO: Remove the +1 when ads are blended in!
         }
 
         @Override

@@ -10,11 +10,15 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 
+import com.google.android.gms.analytics.GoogleAnalytics;
+import com.google.android.gms.analytics.Logger.LogLevel;
+import com.google.android.gms.analytics.Tracker;
 import com.selesgames.weave.BuildConfig;
 import com.selesgames.weave.Debug;
 import com.selesgames.weave.ForApplication;
 import com.selesgames.weave.OnComputationThread;
 import com.selesgames.weave.OnMainThread;
+import com.selesgames.weave.R;
 import com.selesgames.weave.WeaveApplication;
 import com.selesgames.weave.WeavePrefs;
 import com.squareup.picasso.Picasso;
@@ -76,6 +80,17 @@ public class WeaveModule {
     Picasso providePicasso(@ForApplication Context context, @Debug boolean debug) {
         Picasso.Builder builder = new Picasso.Builder(context).loggingEnabled(debug).indicatorsEnabled(debug);
         return builder.build();
+    }
+
+    @Provides
+    @Singleton
+    Tracker provideTracker(@ForApplication Context context, @Debug boolean debug) {
+        GoogleAnalytics analytics = GoogleAnalytics.getInstance(context);
+        // analytics.setDryRun(true);
+        if (debug) {
+            analytics.getLogger().setLogLevel(LogLevel.VERBOSE);
+        }
+        return analytics.newTracker(R.xml.ga_tracker);
     }
 
 }
