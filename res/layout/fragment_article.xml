@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     tools:context="com.selesgames.weave.ui.main.MainActivity" >
 
-    <com.selesgames.weave.ui.ObservableWebView
+    <WebView
         android:id="@+id/web"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />

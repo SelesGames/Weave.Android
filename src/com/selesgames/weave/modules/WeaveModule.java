@@ -26,7 +26,7 @@ import com.squareup.picasso.Picasso;
 import dagger.Module;
 import dagger.Provides;
 
-@Module(library = true, includes = { NetworkModule.class })
+@Module(injects = WeaveApplication.class, library = true, includes = { NetworkModule.class })
 public class WeaveModule {
 
     private final WeaveApplication application;

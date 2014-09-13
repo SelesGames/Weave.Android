@@ -17,6 +17,7 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebView;
 import android.widget.ProgressBar;
 import butterknife.InjectView;
 
@@ -29,7 +30,6 @@ import com.selesgames.weave.model.Article;
 import com.selesgames.weave.model.Feed;
 import com.selesgames.weave.model.News;
 import com.selesgames.weave.ui.BaseFragment;
-import com.selesgames.weave.ui.ObservableWebView;
 
 public class ArticleFragment extends BaseFragment {
 
@@ -64,7 +64,7 @@ public class ArticleFragment extends BaseFragment {
     MobilizerService mMobilizerService;
 
     @InjectView(R.id.web)
-    ObservableWebView mWebView;
+    WebView mWebView;
 
     @InjectView(R.id.progress)
     ProgressBar mProgress;

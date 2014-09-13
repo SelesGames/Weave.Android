@@ -12,6 +12,7 @@ import rx.Scheduler;
 import rx.functions.Action0;
 import rx.functions.Action1;
 import rx.functions.Func1;
+import timber.log.Timber;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -138,7 +139,7 @@ public class CategoryFragment extends BaseFragment {
             populateFeedMap(mFeeds);
         }
 
-        mAdapter = new Adapter(getChildFragmentManager(), mNewsGroups, restoreState);
+        mAdapter = new Adapter(getChildFragmentManager(), mNewsGroups, getResources().getInteger(R.integer.display_ad_every_n_news), restoreState);
         mViewPager.setAdapter(mAdapter);
         // mAdapter.notifyDataSetChanged();
     }
@@ -179,7 +180,7 @@ public class CategoryFragment extends BaseFragment {
 
                         @Override
                         public void call(Throwable t) {
-                            Log.e("WEAVE", "Could not load news", t);
+                            Timber.e("Could not load news", t);
                         }
                     }, new Action0() {
 
@@ -327,32 +328,41 @@ public class CategoryFragment extends BaseFragment {
 
         private List<NewsGroup> mNewsGroups;
 
+        private int mDistanceBetweenAds;
+        
         private boolean mRestoreState;
 
-        public Adapter(FragmentManager fm, List<NewsGroup> newsGroups, boolean restoreState) {
+        public Adapter(FragmentManager fm, List<NewsGroup> newsGroups, int distanceBetweenAds, boolean restoreState) {
             super(fm);
             mNewsGroups = newsGroups;
+            mDistanceBetweenAds = distanceBetweenAds;
             mRestoreState = restoreState;
         }
 
         @Override
         public Fragment getItem(int position) {
-            if (position == 0) {
-                return AdFragment.newInstance();
-            }
-            NewsGroup group = mNewsGroups.get(position - 1); // TODO: Remove -1 when ads are blended in!
-            List<NewsItem> items = group.getNews();
-            if (items.size() == 1) {
-                NewsItem item = items.get(0);
-                return NewsFragment.newInstance(item.feed, item.news);
+            Fragment f;
+            if (position != 0 && mDistanceBetweenAds != 0 && position % mDistanceBetweenAds == 0) {
+                f = AdFragment.newInstance();
             } else {
-                return NewsGroupFragment.newInstance(group);
+                int newsOffset = mDistanceBetweenAds > 0 ? position / mDistanceBetweenAds : 0;
+                NewsGroup group = mNewsGroups.get(position - newsOffset);
+                List<NewsItem> items = group.getNews();
+                if (items.size() == 1) {
+                    NewsItem item = items.get(0);
+                    f = NewsFragment.newInstance(item.feed, item.news);
+                } else {
+                    f = NewsGroupFragment.newInstance(group);
+                }
             }
+            return f;
         }
 
         @Override
         public int getCount() {
-            return mNewsGroups.size() + 1; // TODO: Remove the +1 when ads are blended in!
+            int newsCount = mNewsGroups.size();
+            int adCount = mDistanceBetweenAds > 0 ? newsCount / mDistanceBetweenAds : 0;
+            return newsCount + adCount;
         }
 
         @Override
