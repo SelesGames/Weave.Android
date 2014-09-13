@@ -157,10 +157,14 @@ public class CategoryFragment extends BaseFragment {
 
             @Override
             public void onPageSelected(int position) {
-                NewsGroup group = mNewsGroups.get(position);
-                if (group.getNews().size() == 1) {
-                    NewsItem item = group.getNews().get(0);
-                    mController.onNewsFocussed(item.feed, item.news);
+                if (mAdapter.isNewsItemPosition(position)) {
+                    NewsGroup group = mNewsGroups.get(mAdapter.getOffsetNewsPosition(position));
+                    if (group.getNews().size() == 1) {
+                        NewsItem item = group.getNews().get(0);
+                        mController.onNewsFocussed(item.feed, item.news);
+                    } else {
+                        mController.onNewsUnfocussed();
+                    }
                 } else {
                     mController.onNewsUnfocussed();
                 }
@@ -342,11 +346,9 @@ public class CategoryFragment extends BaseFragment {
         @Override
         public Fragment getItem(int position) {
             Fragment f;
-            if (position != 0 && mDistanceBetweenAds != 0 && position % mDistanceBetweenAds == 0) {
-                f = AdFragment.newInstance();
-            } else {
-                int newsOffset = mDistanceBetweenAds > 0 ? position / mDistanceBetweenAds : 0;
-                NewsGroup group = mNewsGroups.get(position - newsOffset);
+            if (isNewsItemPosition(position)) {
+                int newsPosition = getOffsetNewsPosition(position);
+                NewsGroup group = mNewsGroups.get(newsPosition);
                 List<NewsItem> items = group.getNews();
                 if (items.size() == 1) {
                     NewsItem item = items.get(0);
@@ -354,6 +356,8 @@ public class CategoryFragment extends BaseFragment {
                 } else {
                     f = NewsGroupFragment.newInstance(group);
                 }
+            } else {
+                f = AdFragment.newInstance();
             }
             return f;
         }
@@ -370,6 +374,15 @@ public class CategoryFragment extends BaseFragment {
             if (mRestoreState) {
                 super.restoreState(state, loader);
             }
+        }
+        
+        public boolean isNewsItemPosition(int position) {
+            return position == 0 || mDistanceBetweenAds == 0 || position % mDistanceBetweenAds != 0;
+        }
+        
+        public int getOffsetNewsPosition(int position) {
+            int newsOffset = mDistanceBetweenAds > 0 ? position / mDistanceBetweenAds : 0;
+            return position - newsOffset;
         }
 
     }
