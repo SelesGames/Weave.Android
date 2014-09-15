@@ -1,0 +1,63 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:alpha="0.5"
+    android:background="#333333"
+    tools:context="com.selesgames.weave.ui.main.MainActivity" >
+
+    <LinearLayout
+        android:id="@+id/font_size_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:orientation="horizontal"
+        android:weightSum="5" >
+
+        <Button
+            android:id="@+id/font_size_small"
+            android:layout_width="25dp"
+            android:layout_height="match_parent"
+            android:background="@null"
+            android:text="Sm"
+            android:textColor="#FFFFFF"
+            android:textSize="9sp" />
+
+        <Button
+            android:id="@+id/font_size_medium"
+            android:layout_width="25dp"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:background="@null"
+            android:text="Md"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp" />
+
+        <Button
+            android:id="@+id/font_size_large"
+            android:layout_width="25dp"
+            android:layout_height="match_parent"
+            android:background="@null"
+            android:text="Lg"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp" />
+    </LinearLayout>
+
+    <View
+        android:id="@+id/marker"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_toRightOf="@id/font_size_container"
+        android:visibility="invisible" />
+
+    <ImageButton
+        android:id="@+id/cog"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_centerInParent="true"
+        android:layout_toRightOf="@id/marker"
+        android:background="@null"
+        android:src="@drawable/ic_action_settings" />
+
+</RelativeLayout>

@@ -10,6 +10,8 @@ public class WeavePrefs {
     private static final String KEY_USER_ID = "userId";
     
     private static final String KEY_THEME_ID = "themeId";
+    
+    private static final String KEY_READING_FONT_SIZE = "readingFontSize";
 
     private SharedPreferences mSharedPreferences;
 
@@ -31,6 +33,14 @@ public class WeavePrefs {
     
     public int getThemeId() {
         return mSharedPreferences.getInt(KEY_THEME_ID, 0);
+    }
+    
+    public void setReadingFontSize(int size) {
+        mSharedPreferences.edit().putInt(KEY_READING_FONT_SIZE, size).apply();
+    }
+    
+    public int getReadingFontSize() {
+        return mSharedPreferences.getInt(KEY_READING_FONT_SIZE, 18);
     }
 
 }

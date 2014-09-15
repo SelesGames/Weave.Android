@@ -159,7 +159,7 @@ public class CategoryFragment extends BaseFragment {
             public void onPageSelected(int position) {
                 if (mAdapter.isNewsItemPosition(position)) {
                     NewsGroup group = mNewsGroups.get(mAdapter.getOffsetNewsPosition(position));
-                    if (group.getNews().size() == 1) {
+                    if (group.getNews().size() == 1) { 
                         NewsItem item = group.getNews().get(0);
                         mController.onNewsFocussed(item.feed, item.news);
                     } else {
