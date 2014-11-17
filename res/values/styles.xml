@@ -2,9 +2,17 @@
 
     <!--
         Base application theme, dependent on API level. This theme is replaced
-        by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
+        by AppBaseThemeLight from res/values-vXX/styles.xml on newer devices.
     -->
-    <style name="AppBaseTheme" parent="android:Theme.Light">
+    <style name="AppBaseThemeLight" parent="android:Theme.Light">
+        <!--
+            Theme customizations available in newer API levels can go in
+            res/values-vXX/styles.xml, while customizations related to
+            backward-compatibility can go here.
+        -->
+    </style>
+    
+    <style name="AppBaseThemeDark" parent="android:Theme">
         <!--
             Theme customizations available in newer API levels can go in
             res/values-vXX/styles.xml, while customizations related to
@@ -12,21 +20,26 @@
         -->
     </style>
 
-    <!-- Application theme. -->
-    <style name="AppTheme" parent="AppBaseTheme">
+    <!-- Application light theme. -->
+    <style name="AppThemeLight" parent="AppBaseThemeLight">
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
-    </style>
-
-    <!-- Light theme -->
-    <style name="AppTheme.Light">
+        
         <item name="textColor">@color/text_color_light</item>
         <item name="backgroundColor">@color/background_color_light</item>
+        <item name="headerBackgroundColor">@color/header_background_light</item>
+        <item name="headerForegroundColor">@color/header_foreground_light</item>
+        <item name="settingsIcon">@drawable/ic_action_settings_light</item>
     </style>
-
-    <!-- Dark theme -->
-    <style name="AppTheme.Dark">
+    
+    <!-- Application dark theme. -->
+    <style name="AppThemeDark" parent="AppBaseThemeDark">
+        <!-- All customizations that are NOT specific to a particular API-level can go here. -->
+        
         <item name="textColor">@color/text_color_dark</item>
         <item name="backgroundColor">@color/background_color_dark</item>
+        <item name="headerBackgroundColor">@color/header_background_dark</item>
+        <item name="headerForegroundColor">@color/header_foreground_dark</item>
+        <item name="settingsIcon">@drawable/ic_action_settings_dark</item>
     </style>
 
     <style name="Text">
@@ -35,5 +48,10 @@
 
     <style name="Text.Dark">
         <item name="android:textColor">@color/text_color_dark</item>
+    </style>
+    
+    <style name="ListItemMenuAnimation">
+        <item name="android:windowEnterAnimation">@anim/slide_in_right</item>
+        <item name="android:windowExitAnimation">@anim/slide_out_right</item>
     </style>
 </resources>

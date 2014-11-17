@@ -1,5 +1,10 @@
 package com.selesgames.weave.view;
 
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
@@ -41,11 +46,6 @@ import android.view.ViewParent;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.animation.Interpolator;
 import android.widget.Scroller;
-
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 
 /**
  * Created by castorflex on 12/29/13.
@@ -1303,13 +1303,13 @@ public class VerticalViewPager extends ViewGroup {
                     int heightSize = childHeightSize;
                     if (lp.width != LayoutParams.WRAP_CONTENT) {
                         widthMode = MeasureSpec.EXACTLY;
-                        if (lp.width != LayoutParams.FILL_PARENT) {
+                        if (lp.width != LayoutParams.MATCH_PARENT) {
                             widthSize = lp.width;
                         }
                     }
                     if (lp.height != LayoutParams.WRAP_CONTENT) {
                         heightMode = MeasureSpec.EXACTLY;
-                        if (lp.height != LayoutParams.FILL_PARENT) {
+                        if (lp.height != LayoutParams.MATCH_PARENT) {
                             heightSize = lp.height;
                         }
                     }
@@ -2763,7 +2763,7 @@ public class VerticalViewPager extends ViewGroup {
         int childIndex;
 
         public LayoutParams() {
-            super(FILL_PARENT, FILL_PARENT);
+            super(MATCH_PARENT, MATCH_PARENT);
         }
 
         public LayoutParams(Context context, AttributeSet attrs) {

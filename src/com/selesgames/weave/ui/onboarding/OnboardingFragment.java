@@ -5,6 +5,7 @@ import javax.inject.Inject;
 import rx.Observable;
 import rx.Scheduler;
 import rx.functions.Action1;
+import timber.log.Timber;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
@@ -90,7 +91,7 @@ public class OnboardingFragment extends BaseFragment {
         if (mPrefs.getUserId() == null) {
             mPrefs.setUserId("0d13bf82-0f14-475f-9725-f97e5a123d5a");
             mController.finished();
-            //createAccount();
+//            createAccount();
         } else {
             mSocialContainer.setVisibility(View.VISIBLE);
         }
@@ -221,7 +222,8 @@ public class OnboardingFragment extends BaseFragment {
                         if (userId != null) {
                             mPrefs.setUserId(userId);
                         } else {
-                            // TODO: Log error / Alert user
+                            Timber.e("Mobile service client returned null user id");
+                            // TODO: Alert user
                         }
 
                         mController.finished();
@@ -231,7 +233,7 @@ public class OnboardingFragment extends BaseFragment {
 
                     @Override
                     public void call(Throwable t) {
-                        Log.e("WEAVE", "Could not connect social account", t);
+                        Timber.e(t, "Could not connect social account");
                     }
                 });
             }

@@ -76,7 +76,7 @@ public class MainActivity extends BaseActivity implements SettingsController, Ca
         super.onCreate(savedInstanceState);
 
         // Set the theme
-        setTheme(mPrefs.getThemeId() == 0 ? R.style.AppTheme_Light : R.style.AppTheme_Dark);
+        setTheme(mPrefs.getThemeId() == 0 ? R.style.AppThemeLight : R.style.AppThemeDark);
 
         // Analytics
         mTracker.setScreenName(getClass().getSimpleName());
@@ -198,6 +198,12 @@ public class MainActivity extends BaseActivity implements SettingsController, Ca
     }
 
     @Override
+    public void manageSources() {
+        ManageSourcesDialogFragment fragment = ManageSourcesDialogFragment.newInstance();
+        fragment.show(getSupportFragmentManager(), null);
+    }
+
+    @Override
     public void onCategorySelected(String category) {
         int currentIndex = mViewPager.getCurrentItem();
         if (mCategory != null && mCategory.equals(category)) {
@@ -313,9 +319,9 @@ public class MainActivity extends BaseActivity implements SettingsController, Ca
         return modules;
     }
 
-    @Module(injects = { MainActivity.class, SettingsFragment.class, CategoriesFragment.class, CategoryFragment.class,
-            NewsFragment.class, NewsGroupFragment.class, ArticleFragment.class, ArticleActionsFragment.class,
-            AdFragment.class }, addsTo = ActivityModule.class)
+    @Module(injects = { MainActivity.class, SettingsFragment.class, ManageSourcesDialogFragment.class,
+            CategoriesFragment.class, CategoryFragment.class, NewsFragment.class, NewsGroupFragment.class,
+            ArticleFragment.class, ArticleActionsFragment.class, AdFragment.class }, addsTo = ActivityModule.class)
     public class MainActivityModule {
 
         @Provides

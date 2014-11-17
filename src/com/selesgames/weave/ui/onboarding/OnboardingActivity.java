@@ -18,7 +18,7 @@ import com.selesgames.weave.ui.main.MainActivity;
 import dagger.Module;
 import dagger.Provides;
 
-public class OnboardingActivity extends BaseActivity implements OnboardingController {
+public class OnboardingActivity extends BaseActivity {
 
     @Inject
     @ForActivity
@@ -41,19 +41,21 @@ public class OnboardingActivity extends BaseActivity implements OnboardingContro
         return modules;
     }
 
-    public void finished() {
-        Intent i = new Intent(mContext, MainActivity.class);
-        i.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(i);
-        finish();
-    }
-
     @Module(injects = { OnboardingActivity.class, OnboardingFragment.class }, addsTo = ActivityModule.class, includes = { MicrosoftServiceClientModule.class })
     public class OnboardingModule {
 
         @Provides
         OnboardingController provideController() {
-            return OnboardingActivity.this;
+            return new OnboardingController() {
+                
+                @Override
+                public void finished() {
+                    Intent i = new Intent(mContext, MainActivity.class);
+                    i.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(i);
+                    finish();
+                }
+            };
         }
     }
 

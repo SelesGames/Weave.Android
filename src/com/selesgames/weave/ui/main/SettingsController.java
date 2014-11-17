@@ -4,4 +4,6 @@ public interface SettingsController {
 
     void onThemeChanged();
 
+    void manageSources();
+
 }

@@ -13,6 +13,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.Spinner;
 import butterknife.InjectView;
+import butterknife.OnClick;
 
 import com.selesgames.weave.ForActivity;
 import com.selesgames.weave.OnMainThread;
@@ -80,6 +81,11 @@ public class SettingsFragment extends BaseFragment {
             }
         });
 
+    }
+    
+    @OnClick(R.id.manage_sources)
+    public void onManageSourcesClicked() {
+        mController.manageSources();
     }
 
 }

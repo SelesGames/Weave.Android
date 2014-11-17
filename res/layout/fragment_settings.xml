@@ -3,6 +3,7 @@
     xmlns:weave="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:padding="10dp"
     tools:context="com.selesgames.weave.ui.main.MainActivity" >
 
     <LinearLayout
@@ -29,6 +30,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:entries="@array/settings_themes" />
+
+        <Button
+            android:id="@+id/manage_sources"
+            style="@style/Text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/settings_manage_sources" />
     </LinearLayout>
 
 </FrameLayout>

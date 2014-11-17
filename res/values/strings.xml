@@ -21,6 +21,10 @@
     <string name="settings">Settings</string>
     <string name="settings_theme_light">Light</string>
     <string name="settings_theme_dark">Dark</string>
+    <string name="settings_manage_sources">Manage Sources</string>
+    <string name="settings_add_source">Add Source</string>
+    <string name="settings_edit">Edit</string>
+    <string name="settings_delete">Delete</string>
 
     <!-- Actions -->
 

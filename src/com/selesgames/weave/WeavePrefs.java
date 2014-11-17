@@ -32,7 +32,7 @@ public class WeavePrefs {
     }
     
     public int getThemeId() {
-        return mSharedPreferences.getInt(KEY_THEME_ID, 0);
+        return mSharedPreferences.getInt(KEY_THEME_ID, 1);
     }
     
     public void setReadingFontSize(int size) {

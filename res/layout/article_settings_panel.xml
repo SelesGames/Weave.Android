@@ -58,6 +58,6 @@
         android:layout_centerInParent="true"
         android:layout_toRightOf="@id/marker"
         android:background="@null"
-        android:src="@drawable/ic_action_settings" />
+        android:src="@drawable/ic_action_settings_dark" />
 
 </RelativeLayout>

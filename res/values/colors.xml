@@ -1,16 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <color name="orange">#FFA302</color>
     <color name="tertiary">#F0F0F0</color>
 
     <!-- Light -->
 
     <color name="text_color_light">#000000</color>
     <color name="background_color_light">#FFFFFF</color>
+    <color name="header_background_light">@color/orange</color>
+    <color name="header_foreground_light">#FFFFFF</color>
 
     <!-- Dark -->
 
     <color name="text_color_dark">#FFFFFF</color>
     <color name="background_color_dark">#000000</color>
+    <color name="header_background_dark">@color/orange</color>
+    <color name="header_foreground_dark">#000000</color>
 
 </resources>
